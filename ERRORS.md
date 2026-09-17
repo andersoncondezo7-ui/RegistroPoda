@@ -48,5 +48,17 @@
 
 ## Historial real de incidencias
 
-_(vacío por ahora — se irá completando a medida que se prueben el flujo y el
-despliegue)_
+## 2026-09-17 — No se pudo instalar GitHub CLI (`gh`) para publicar el repo
+- Síntoma: `winget install --id GitHub.cli` descargó el instalador pero la
+  instalación terminó con "Ha cancelado la instalación" / código 1602.
+  También falló cualquier comando de PowerShell con "Acceso denegado".
+- Causa: el instalador de `gh` es un MSI que requiere elevación (UAC), y el
+  entorno de ejecución no puede aprobar ese diálogo ni ejecutar PowerShell
+  con privilegios elevados.
+- Solución: se evitó `gh` por completo. El repo remoto se creó manualmente
+  en github.com (sin README/.gitignore) y el push se hizo con `git` puro,
+  autenticando con un Personal Access Token de un solo uso pasado por
+  `git -c http.extraheader="Authorization: Basic <token en base64>"` — no
+  requiere instalar nada ni guardar el token en `.git/config`. El token se
+  revocó después del push. Repetir este mismo método para cualquier push
+  futuro que no pueda hacerse desde la terminal propia del usuario.

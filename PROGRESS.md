@@ -3,7 +3,12 @@
 > Léeme primero. Aquí se registra qué se hizo y qué falta, para no tener que
 > repasar toda la conversación en cada sesión nueva.
 
-## Estado actual: 🟡 Formulario listo — falta configurar Power Automate y publicar
+## Estado actual: 🟡 Repo publicado en GitHub — falta activar Pages y configurar Power Automate
+
+## Repositorio
+
+- Remoto: https://github.com/andersoncondezo7-ui/RegistroPoda
+- Rama: `main` (ya tiene el primer commit subido)
 
 ## Hecho (2026-09-17)
 
@@ -27,8 +32,17 @@
 - [x] `README.md` con guía paso a paso: publicar en GitHub Pages + construir
       el flujo de Power Automate (SharePoint fotos + Excel de SharePoint).
 - [x] `ERRORS.md` creado para registrar incidencias.
+- [x] Repositorio git inicializado, commit creado y subido a
+      https://github.com/andersoncondezo7-ui/RegistroPoda (rama `main`).
+      `gh` CLI no se pudo instalar (requiere UAC/administrador, no disponible
+      en este entorno); se usó un Personal Access Token temporal solo para el
+      push, vía `git -c http.extraheader`, sin guardarlo en `.git/config` ni
+      en ningún archivo. El usuario ya lo revocó/debe revocarlo tras el push.
 
 ## Pendiente / próximos pasos
+
+- [ ] Activar GitHub Pages en https://github.com/andersoncondezo7-ui/RegistroPoda
+      → Settings → Pages → Source: `main` / `/ (root)`.
 
 - [ ] **Usuario debe crear el flujo en Power Automate** siguiendo
       `README.md` → sección 3, y pegar la URL resultante en `config.js` →
@@ -39,9 +53,6 @@
       Latitud, Longitud, Situacion, NombreContacto, Telefono, EnlacesFotos).
 - [ ] Crear/confirmar la biblioteca de documentos en SharePoint donde se
       guardarán las fotos.
-- [ ] Inicializar el repositorio git y subirlo a GitHub (aún no se ha hecho
-      — carpeta local no era un repositorio git al iniciar este proyecto).
-- [ ] Activar GitHub Pages en el repo (Settings → Pages).
 - [ ] Probar un envío real de extremo a extremo (formulario → Power Automate
       → SharePoint/Excel) y confirmar en el historial de ejecuciones del flujo.
 - [ ] Decidir si se necesita lista fija de `MUNICIPALIDADES` en `config.js`
