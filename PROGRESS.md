@@ -3,7 +3,7 @@
 > Léeme primero. Aquí se registra qué se hizo y qué falta, para no tener que
 > repasar toda la conversación en cada sesión nueva.
 
-## Estado actual: 🟡 GitHub Pages activo y sirviendo la última versión — falta configurar Power Automate
+## Estado actual: 🟡 URL de Power Automate ya configurada — falta terminar de armar el flujo (Pasos 2 a 6)
 
 - Sitio publicado: https://andersoncondezo7-ui.github.io/RegistroPoda/
   (confirmado con curl el 2026-09-17 que sirve el contenido correcto; si
@@ -124,16 +124,27 @@
         integración con Meta Cloud API mencionada solo como alternativa
         futura si algún día se necesita 100% automático.
 
+## Hecho (2026-09-17, cuarta ronda — URL del flujo + guía dedicada)
+
+- [x] El usuario compartió la URL real del disparador HTTP de Power
+      Automate (ya la tenía creada). Se pegó en `config.js` →
+      `POWER_AUTOMATE_URL` (commit `a7d17d0`).
+- [x] Creado [`power-automate/GUIA_FLUJO_POWER_AUTOMATE.md`](../power-automate/GUIA_FLUJO_POWER_AUTOMATE.md):
+      guía paso a paso "copiar y pegar" para armar el resto del flujo
+      (Pasos 2 a 6 — Parse JSON, variables, carpeta, subida de fotos, fila
+      del Excel con las dos opciones A/B), con el JSON Schema completo del
+      disparador ya escrito (no hace falta generarlo desde el ejemplo),
+      sección de problemas comunes, y una nota de que el Paso 1
+      (disparador) ya está hecho. Enlazada desde README.md → sección 3.
+- [x] GitHub Pages confirmado activo (no hace falta activarlo, ya estaba).
+
 ## Pendiente / próximos pasos
 
-- [ ] Activar GitHub Pages en https://github.com/andersoncondezo7-ui/RegistroPoda
-      → Settings → Pages → Source: `main` / `/ (root)` (parece que ya está
-      activo, se confirmó sirviendo contenido actualizado el 2026-09-17).
-
-- [ ] **Usuario debe crear el flujo en Power Automate** siguiendo
-      `README.md` → sección 3, y pegar la URL resultante en `config.js` →
-      `POWER_AUTOMATE_URL`. (No se puede automatizar desde aquí: Power
-      Automate se configura en su portal web, no por código.)
+- [ ] **Terminar de armar el flujo en Power Automate** siguiendo
+      `power-automate/GUIA_FLUJO_POWER_AUTOMATE.md` (Pasos 2 a 6: Parse
+      JSON, variables, crear carpeta, subir fotos, fila del Excel). El
+      disparador (Paso 1) ya existe. No se puede automatizar desde aquí:
+      Power Automate se configura en su portal web, no por código.
 - [ ] Subir `power-automate/RegistroPoda_Plantilla.xlsx` a la biblioteca de
       SharePoint elegida (ya trae la tabla `TablaPoda` y la validación de
       distritos armada, no hace falta crearla desde cero).

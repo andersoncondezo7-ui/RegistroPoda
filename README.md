@@ -24,6 +24,7 @@ texto listo). No requiere cuenta de WhatsApp Business API.
 | `config.js` | **Único archivo que normalmente hay que editar**: URL de Power Automate, nombre de la empresa, lista de distritos, límites de fotos. |
 | `script.js` | Lógica: validación, compresión de fotos, envío del reporte. |
 | `sample-payload.json` | Ejemplo del JSON que se envía, útil para generar el esquema en Power Automate. |
+| `power-automate/GUIA_FLUJO_POWER_AUTOMATE.md` | **Guía paso a paso para armar el flujo**, con los valores exactos de cada acción para copiar y pegar. |
 | `power-automate/RegistroPoda_Plantilla.xlsx` | Plantilla del Excel a subir a SharePoint (hoja "Registros", tabla `TablaPoda`, con validación de distritos). |
 | `power-automate/office-script-agregar-registro.ts` | Office Script que agrega cada registro a la tabla del Excel (alternativa a la acción nativa "Agregar una fila"). |
 | `Archivo/Distritos.xlsx` | Fuente oficial de los 60 distritos (entregada por el usuario). Si cambia, actualizar `config.js` → `DISTRITOS` y la hoja "Listas" de `RegistroPoda_Plantilla.xlsx`. |
@@ -78,6 +79,10 @@ Mientras `POWER_AUTOMATE_URL` no esté configurada, el formulario muestra una
 advertencia y no intenta enviar nada.
 
 ## 3. Power Automate: crear el flujo
+
+> 📋 Para seguir esto paso a paso con los valores exactos de cada campo,
+> usa [`power-automate/GUIA_FLUJO_POWER_AUTOMATE.md`](power-automate/GUIA_FLUJO_POWER_AUTOMATE.md) —
+> esta sección es el resumen, esa guía es la versión "copiar y pegar".
 
 Crea un **flujo de nube automatizado en blanco** con estos pasos:
 
