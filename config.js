@@ -88,4 +88,14 @@ const CONFIG = {
     calidadJPEG: 0.72,
     minCantidadRequerida: 1,
   },
+
+  // Notificación por WhatsApp: al guardar el reporte, el navegador abre
+  // WhatsApp con un mensaje-resumen ya escrito (enlace "wa.me"), para que
+  // quien llena el formulario solo tenga que presionar Enviar dentro de
+  // WhatsApp. No requiere cuenta de WhatsApp Business API ni backend: el
+  // mensaje queda registrado en el WhatsApp de quien lo envía, como
+  // comprobante de que el reporte se hizo.
+  WHATSAPP: {
+    numeroDestino: "51963799933", // sin "+" ni espacios
+  },
 };

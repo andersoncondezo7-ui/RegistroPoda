@@ -3,7 +3,12 @@
 > Léeme primero. Aquí se registra qué se hizo y qué falta, para no tener que
 > repasar toda la conversación en cada sesión nueva.
 
-## Estado actual: 🟡 Repo publicado en GitHub — falta activar Pages y configurar Power Automate
+## Estado actual: 🟡 GitHub Pages activo y sirviendo la última versión — falta configurar Power Automate
+
+- Sitio publicado: https://andersoncondezo7-ui.github.io/RegistroPoda/
+  (confirmado con curl el 2026-09-17 que sirve el contenido correcto; si
+  alguien ve algo desactualizado, primero sugerir hard refresh antes de
+  asumir que el deploy falló).
 
 ## Repositorio
 
@@ -76,20 +81,54 @@
       **distrito → mes → carpeta por registro** (con fecha y hora en el
       nombre para que no choquen registros del mismo día), documentado en
       README.md → sección 3, Paso 2.
-- [x] Módulo de notificación por WhatsApp documentado (README.md → sección
-      3, Paso 5): vía WhatsApp Business Platform (Meta Cloud API), acción
-      HTTP en Power Automate con plantilla de mensaje pre-aprobada,
-      destino fijo **+51 963 799 933**. Alternativa mencionada: Twilio
-      WhatsApp Sandbox para pruebas rápidas.
-      `power-automate/whatsapp-envio-ejemplo.json` tiene el cuerpo de
-      ejemplo de la petición HTTP.
+- [x] ~~Módulo de notificación por WhatsApp vía Meta Cloud API~~ — **diseño
+      descartado y reemplazado**, ver ronda del 2026-09-17 más abajo
+      ("WhatsApp simplificado a enlace wa.me").
 - [x] README.md actualizado con todo lo anterior (tabla de archivos, los 5
       campos, secciones nuevas del flujo de Power Automate).
+- [x] Segunda ronda subida a GitHub (commit `338cfdf`).
+
+## Hecho (2026-09-17, tercera ronda — WhatsApp simplificado a enlace wa.me + fix de caché)
+
+- [x] **Diagnóstico de "no se ve el cambio en GitHub Pages"**: el usuario
+      reportó que el formulario publicado seguía mostrando "Empresa de
+      Distribución Eléctrica" y el buscador de distrito no encontraba nada.
+      Se verificó con `curl` directo a `andersoncondezo7-ui.github.io` que
+      el servidor **sí** tenía la versión correcta (Luz del Sur, 60
+      distritos) — era caché del navegador del usuario. Se le indicó hacer
+      hard refresh (Ctrl+Shift+R). Si vuelve a pasar, repetir este mismo
+      diagnóstico con curl antes de asumir que algo quedó mal subido.
+- [x] **Rediseño completo del módulo de WhatsApp**: el usuario mostró
+      capturas de su otra app ("Registroenvio") que usa un enlace `wa.me`
+      con mensaje pre-armado (no la API de WhatsApp Business/Meta que se
+      había diseñado en la ronda anterior). Se reemplazó todo lo anterior:
+      - `config.js` → `WHATSAPP.numeroDestino` (hoy `51963799933`).
+      - `script.js`: `construirMensajeWhatsApp()` arma un resumen con
+        emojis (distrito, dirección, situación, contacto, fecha, nº de
+        fotos, link de Google Maps si hay GPS) y `construirEnlaceWhatsApp()`
+        arma la URL `https://wa.me/{numero}?text=...`. `enviarReporte()`
+        ahora: valida → muestra overlay "Procesando tu envío" → hace el
+        fetch a Power Automate → limpia el formulario → redirige a esa URL
+        (`window.location.href`), igual que Registroenvio.
+      - `index.html`/`style.css`: overlay de pantalla completa
+        `#overlayEnvio` con spinner, título, texto y aviso "⏳ Espera unos
+        segundos..." — mismo patrón visual que la captura de referencia,
+        pero con la paleta verde/azul del sitio (el usuario pidió
+        explícitamente no copiar los colores rojos de su referencia).
+      - Se borró `power-automate/whatsapp-envio-ejemplo.json` (ya no
+        aplica, era del diseño con Meta Cloud API).
+      - README.md → "Paso 5" reescrito: ya no es parte del flujo de Power
+        Automate, es 100% client-side; se documentó la limitación (el
+        mensaje sale del WhatsApp personal de quien llena el formulario y
+        requiere que esa persona presione Enviar a mano) y se dejó la
+        integración con Meta Cloud API mencionada solo como alternativa
+        futura si algún día se necesita 100% automático.
 
 ## Pendiente / próximos pasos
 
 - [ ] Activar GitHub Pages en https://github.com/andersoncondezo7-ui/RegistroPoda
-      → Settings → Pages → Source: `main` / `/ (root)`.
+      → Settings → Pages → Source: `main` / `/ (root)` (parece que ya está
+      activo, se confirmó sirviendo contenido actualizado el 2026-09-17).
 
 - [ ] **Usuario debe crear el flujo en Power Automate** siguiendo
       `README.md` → sección 3, y pegar la URL resultante en `config.js` →
@@ -103,15 +142,11 @@
 - [ ] Confirmar con el usuario los 2 nombres de distrito marcados como
       dudosos ("Santa María" vs "Santa María del Mar", "Ate-Vitarte" vs
       "Ate") antes de dar la lista por definitiva.
-- [ ] Crear la cuenta de WhatsApp Business Platform (Meta) o decidir usar
-      Twilio, y la plantilla de mensaje aprobada, para poder completar el
-      Paso 5 del flujo (por ahora solo está documentado/diseñado, no se
-      puede crear la cuenta externa desde aquí).
 - [ ] Probar un envío real de extremo a extremo (formulario → Power Automate
-      → SharePoint/Excel/WhatsApp) y confirmar en el historial de
-      ejecuciones del flujo.
-- [ ] Hacer commit + push de esta segunda ronda de cambios (Distrito,
-      Luz del Sur, plantilla Excel, Office Script, WhatsApp) — pendiente al
+      → SharePoint/Excel, y verificar que WhatsApp abre con el mensaje
+      correcto en un celular real).
+- [ ] Hacer commit + push de esta tercera ronda de cambios (WhatsApp
+      simplificado, overlay de envío) — pendiente al
       momento de escribir esto.
 
 ## Decisiones tomadas (para no repreguntar)
@@ -135,6 +170,13 @@
   usuario), no en el mapa público de concesión — puede incluir zonas
   rurales de Huarochirí/Cañete que Luz del Sur atiende aunque no sean
   "Lima" en sentido estricto de Lima Metropolitana.
+- WhatsApp usa un enlace `wa.me` con mensaje pre-armado (client-side),
+  **no** la API de WhatsApp Business/Meta Cloud API. Se descartó ese
+  diseño anterior porque el usuario mostró que su otra app
+  ("Registroenvio") ya resuelve esto así, sin cuentas externas ni
+  backend: más simple, aunque requiere que la persona confirme el envío
+  a mano dentro de WhatsApp y el mensaje sale de su número personal, no
+  de uno institucional.
 
 ## Cómo continuar esta conversación en una sesión nueva
 

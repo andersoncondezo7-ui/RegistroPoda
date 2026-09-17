@@ -332,13 +332,14 @@ function construirPayload() {
 async function enviarReporte(payload) {
   const boton = document.getElementById("btnEnviar");
   boton.disabled = true;
-  mostrarMensaje("Enviando reporte...", "cargando");
 
   if (!CONFIG.POWER_AUTOMATE_URL || CONFIG.POWER_AUTOMATE_URL.startsWith("PEGAR_AQUI")) {
     mostrarMensaje("⚠️ El formulario aún no está conectado a Power Automate. Configure POWER_AUTOMATE_URL en config.js.", "error");
     boton.disabled = false;
     return;
   }
+
+  mostrarOverlayEnvio();
 
   try {
     // Se usa 'no-cors' + Content-Type text/plain porque el disparador HTTP de
@@ -354,23 +355,71 @@ async function enviarReporte(payload) {
       body: JSON.stringify(payload),
     });
 
-    mostrarMensaje("✅ Reporte enviado correctamente. Gracias por su reporte.", "exito");
-    document.getElementById("formPoda").reset();
-    document.getElementById("previewFotos").innerHTML = "";
-    document.getElementById("otroDetalleWrap").hidden = true;
-    document.getElementById("ubicacionEstado").textContent = "";
-    document.querySelectorAll(".situacion-card").forEach((c) => c.classList.remove("is-selected"));
-    document.getElementById("distritoSeleccionado").hidden = true;
-    document.getElementById("comboboxDistrito").hidden = false;
-    document.getElementById("buscadorDistrito").value = "";
-    fotosProcesadas = [];
-    ubicacionGPS = null;
+    // Pequeña espera para que la pantalla de "procesando" alcance a verse
+    // (igual que en Registroenvio) antes de saltar a WhatsApp.
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+
+    limpiarFormulario();
+    window.location.href = construirEnlaceWhatsApp(payload);
   } catch (err) {
     console.error("Error al enviar el reporte:", err);
+    ocultarOverlayEnvio();
     mostrarMensaje("❌ No se pudo enviar el reporte. Verifique su conexión a internet e intente nuevamente.", "error");
-  } finally {
     boton.disabled = false;
   }
+}
+
+function limpiarFormulario() {
+  document.getElementById("formPoda").reset();
+  document.getElementById("previewFotos").innerHTML = "";
+  document.getElementById("otroDetalleWrap").hidden = true;
+  document.getElementById("ubicacionEstado").textContent = "";
+  document.querySelectorAll(".situacion-card").forEach((c) => c.classList.remove("is-selected"));
+  document.getElementById("distritoSeleccionado").hidden = true;
+  document.getElementById("comboboxDistrito").hidden = false;
+  document.getElementById("buscadorDistrito").value = "";
+  fotosProcesadas = [];
+  ubicacionGPS = null;
+}
+
+function mostrarOverlayEnvio() {
+  document.getElementById("overlayEnvio").hidden = false;
+}
+
+function ocultarOverlayEnvio() {
+  document.getElementById("overlayEnvio").hidden = true;
+}
+
+function construirEnlaceWhatsApp(payload) {
+  const numero = CONFIG.WHATSAPP?.numeroDestino || "";
+  const mensaje = construirMensajeWhatsApp(payload);
+  return `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+}
+
+function construirMensajeWhatsApp(payload) {
+  const fechaLegible = new Date(payload.fecha).toLocaleString("es-PE", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  const lineas = [
+    "🌳⚡ *NUEVO REGISTRO DE PODA*",
+    "",
+    `📍 *Distrito:* ${payload.distrito}`,
+    `🏠 *Dirección:* ${payload.direccion}`,
+    `⚠️ *Situación:* ${payload.situacionTexto}`,
+    `👤 *Contacto:* ${payload.nombreContacto}`,
+    `📱 *Teléfono:* ${payload.telefonoContacto}`,
+    `🗓️ *Fecha:* ${fechaLegible}`,
+    `📷 *Fotos adjuntadas:* ${payload.fotos.length}`,
+  ];
+
+  if (payload.ubicacion) {
+    lineas.push(`🛰️ *Ubicación GPS:* https://maps.google.com/?q=${payload.ubicacion.lat},${payload.ubicacion.lng}`);
+  }
+
+  lineas.push("", "_Enviado desde el formulario de Reporte de Poda_");
+  return lineas.join("\n");
 }
 
 function mostrarMensaje(texto, tipo) {

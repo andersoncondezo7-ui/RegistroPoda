@@ -88,7 +88,7 @@
       </fieldset>
     </section>
 
-    <button type="submit" id="btnEnviar" class="btn-primario">📤 Enviar reporte</button>
+    <button type="submit" id="btnEnviar" class="btn-primario">📤 Enviar reporte y avisar por WhatsApp</button>
 
     <div id="mensajeEstado" class="mensaje-estado" role="status" aria-live="polite" hidden></div>
 
@@ -97,6 +97,19 @@
   <footer class="app-footer">
     <p>Los datos enviados se registran automáticamente. No comparta información sensible adicional en este formulario.</p>
   </footer>
+
+  <div id="overlayEnvio" class="overlay" hidden role="status" aria-live="assertive">
+    <div class="overlay__tarjeta">
+      <div class="overlay__spinner" aria-hidden="true"></div>
+      <p class="overlay__etiqueta">Procesando tu envío</p>
+      <h2 class="overlay__titulo">Estamos guardando tu información</h2>
+      <p class="overlay__texto">
+        No cierres ni retrocedas esta página. Al terminar, WhatsApp se
+        abrirá automáticamente con tu mensaje listo.
+      </p>
+      <div class="overlay__aviso">⏳ Espera unos segundos. La redirección se realizará automáticamente.</div>
+    </div>
+  </div>
 
 </div>
 

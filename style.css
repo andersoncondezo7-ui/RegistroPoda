@@ -303,3 +303,71 @@ input[type="file"] {
   font-size: 0.75rem;
   margin-top: 24px;
 }
+
+/* --- Overlay "procesando envío" (antes de abrir WhatsApp) --- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 30, 24, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.overlay__tarjeta {
+  background: #fff;
+  border-radius: 14px;
+  padding: 30px 26px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.28);
+}
+
+.overlay__spinner {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border: 5px solid #dfe9e2;
+  border-top-color: var(--verde);
+  border-radius: 50%;
+  animation: overlay-girar 0.9s linear infinite;
+}
+
+@keyframes overlay-girar {
+  to { transform: rotate(360deg); }
+}
+
+.overlay__etiqueta {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--verde);
+}
+
+.overlay__titulo {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  color: var(--texto);
+}
+
+.overlay__texto {
+  margin: 0 0 16px;
+  font-size: 0.88rem;
+  color: var(--texto-suave);
+  line-height: 1.4;
+}
+
+.overlay__aviso {
+  background: #fff6e0;
+  border: 1px solid #f0dfa8;
+  color: #7a5c00;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  text-align: left;
+}

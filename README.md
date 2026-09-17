@@ -8,7 +8,12 @@ publicarse en **GitHub Pages** y enviar cada reporte a un flujo de
 - Guarda la(s) foto(s) en una biblioteca de documentos de **SharePoint**,
   organizadas en carpetas por distrito / mes / registro.
 - Agrega una fila con los datos del reporte a un **Excel de SharePoint**.
-- Envía una **notificación por WhatsApp** avisando que llegó un registro nuevo.
+
+Además, justo al guardar, el propio navegador abre **WhatsApp** con un
+mensaje-resumen del registro ya escrito, para que quien llenó el formulario
+solo tenga que presionar Enviar (mismo patrón que ya usan en su app
+"Registroenvio": pantalla de "procesando" → redirección a `wa.me` con el
+texto listo). No requiere cuenta de WhatsApp Business API.
 
 ## Contenido del proyecto
 
@@ -21,7 +26,6 @@ publicarse en **GitHub Pages** y enviar cada reporte a un flujo de
 | `sample-payload.json` | Ejemplo del JSON que se envía, útil para generar el esquema en Power Automate. |
 | `power-automate/RegistroPoda_Plantilla.xlsx` | Plantilla del Excel a subir a SharePoint (hoja "Registros", tabla `TablaPoda`, con validación de distritos). |
 | `power-automate/office-script-agregar-registro.ts` | Office Script que agrega cada registro a la tabla del Excel (alternativa a la acción nativa "Agregar una fila"). |
-| `power-automate/whatsapp-envio-ejemplo.json` | Cuerpo de ejemplo para la acción HTTP que envía la notificación por WhatsApp. |
 | `Archivo/Distritos.xlsx` | Fuente oficial de los 60 distritos (entregada por el usuario). Si cambia, actualizar `config.js` → `DISTRITOS` y la hoja "Listas" de `RegistroPoda_Plantilla.xlsx`. |
 | `PROGRESS.md` | Bitácora de avance del proyecto (léelo antes de pedir cambios nuevos). |
 | `ERRORS.md` | Registro de errores/incidencias encontrados y su solución. |
@@ -66,7 +70,8 @@ Abre `config.js` y confirma/edita:
 ```js
 POWER_AUTOMATE_URL: "PEGAR_AQUI_LA_URL_DEL_FLUJO_DE_POWER_AUTOMATE",
 NOMBRE_EMPRESA: "Luz del Sur",
-DISTRITOS: [ "Ate", "Barranco", /* ... */ ],
+DISTRITOS: [ "Ate-Vitarte", "Barranco", /* ... */ ],
+WHATSAPP: { numeroDestino: "51963799933" },
 ```
 
 Mientras `POWER_AUTOMATE_URL` no esté configurada, el formulario muestra una
@@ -166,44 +171,39 @@ agregar la fila:
    solo. Úsala si quieres más margen para agregar lógica más adelante
    (validaciones, evitar duplicados, etc.).
 
-### Paso 5 — Notificación por WhatsApp
+### Paso 5 — Notificación por WhatsApp (no va en Power Automate)
 
-Cada vez que se guarda un registro, se envía un WhatsApp a
-**+51 963 799 933** avisando que hay un caso nuevo. WhatsApp no permite
-automatizar envíos desde un número personal: hace falta una cuenta de
-**WhatsApp Business Platform** (Meta) con al menos un número habilitado
-para la API y una **plantilla de mensaje aprobada** (los mensajes que
-inicia la empresa, fuera de una conversación ya abierta por el cliente,
-solo pueden ser plantillas pre-aprobadas por Meta).
+Esta parte **no ocurre en el flujo**: la notificación por WhatsApp la arma
+y la dispara el propio `script.js`, en el navegador, justo después de que
+la petición a Power Automate sale — no requiere cuenta de WhatsApp
+Business API, tokens ni plantillas aprobadas por Meta. Es el mismo patrón
+simple que ya usan en su app "Registroenvio":
 
-1. Crea una app en [developers.facebook.com](https://developers.facebook.com/)
-   → agrega el producto **WhatsApp** → registra o usa el número de prueba
-   que te da Meta (este es el número que **envía**, no tiene que ser el
-   +51 963 799 933 — ese es el destino que recibe el aviso).
-2. En **Administrador del WhatsApp Business** crea una plantilla, por
-   ejemplo `nuevo_registro_poda`, categoría "Utilidad", texto:
-   > Nuevo registro de poda en {{1}}. Situación: {{2}}. Ver fotos: {{3}}
-3. Consigue el `PHONE_NUMBER_ID` de tu número y un **token de acceso**
-   (para producción, un token de sistema de usuario permanente, no el
-   token temporal de prueba de 24h).
-4. En el flujo de Power Automate, agrega una acción **HTTP** después de
-   guardar la fila en el Excel:
-   - Método: `POST`
-   - URL: `https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/messages`
-   - Encabezados: `Authorization: Bearer {TU_TOKEN}`, `Content-Type: application/json`
-   - Cuerpo: basado en
-     [`power-automate/whatsapp-envio-ejemplo.json`](power-automate/whatsapp-envio-ejemplo.json),
-     reemplazando `{{distrito}}`, `{{situacionTexto}}` y
-     `{{carpetaRegistroURL}}` por contenido dinámico
-     (`@{body('Analizar_JSON')?['distrito']}`, etc.) y dejando
-     `"to": "51963799933"` fijo.
+1. Al presionar "Enviar reporte", aparece una pantalla de **"Procesando tu
+   envío"** con spinner (`#overlayEnvio` en `index.html`) mientras se manda
+   la petición a Power Automate.
+2. Con la petición ya en camino, `script.js` arma un mensaje de texto con
+   los datos del reporte (`construirMensajeWhatsApp()`) y redirige el
+   navegador a `https://wa.me/{numero}?text={mensaje}` — esto abre WhatsApp
+   (la app en el celular, o WhatsApp Web en escritorio) con el mensaje ya
+   escrito.
+3. Quien llenó el formulario solo tiene que presionar **Enviar** dentro de
+   WhatsApp. Ese mensaje enviado queda en su propio historial de WhatsApp
+   como comprobante de que el reporte se registró y de que alguien se dio
+   por enterado.
+4. El número de destino se configura en `config.js` →
+   `WHATSAPP.numeroDestino` (hoy: `51963799933`, sin "+" ni espacios).
 
-> Alternativa más rápida para pruebas (sin cuenta de Meta todavía):
-> **Twilio WhatsApp Sandbox** — mismo patrón de acción HTTP, pero apuntando
-> a la API de Twilio con tu Account SID/Auth Token. Es más simple de
-> activar pero requiere que el número +51 963 799 933 se "una" al sandbox
-> primero enviando un mensaje de activación, y no es apto para producción
-> sin pasar a un número de Twilio verificado.
+Limitación a tener en cuenta: el mensaje se envía **desde el WhatsApp
+personal de quien llena el formulario**, no desde un número institucional
+de la empresa, y **requiere que esa persona confirme el envío a mano**
+dentro de WhatsApp (no es 100% automático de punta a punta). Si más
+adelante se necesita que el aviso salga solo, sin que nadie tenga que
+tocar "Enviar", la alternativa es integrar la **WhatsApp Business
+Platform (Meta Cloud API)** desde Power Automate con una plantilla de
+mensaje aprobada — es más robusto pero requiere crear una cuenta de Meta
+for Developers, verificar un número y esperar la aprobación de la
+plantilla; se dejó fuera de esta versión porque no es lo que se pidió.
 
 ### Guardar el flujo
 Al guardar, copia la **URL HTTP POST** generada en el disparador y pégala en
@@ -221,8 +221,9 @@ distinto (como `github.io`). Para evitarlo, el formulario:
   que evita el bloqueo del navegador (la petición sí llega al flujo).
 - A cambio, **no podemos confirmar desde el navegador si el flujo se
   ejecutó correctamente** (solo si la petición salió de la red del
-  usuario). El mensaje "✅ Reporte enviado" indica que la petición se envió,
-  no que el flujo terminó sin errores internos.
+  usuario). Que se abra WhatsApp con el mensaje-resumen indica que la
+  petición se envió, no que el flujo de Power Automate terminó sin errores
+  internos.
 
 Cómo verificar que todo funciona de extremo a extremo:
 1. Envía un reporte de prueba desde el formulario.

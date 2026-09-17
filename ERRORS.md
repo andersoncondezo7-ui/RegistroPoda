@@ -78,3 +78,39 @@
   `RegistroPoda_Plantilla.xlsx`. Lección: cuando el usuario puede
   proporcionar una fuente oficial, pedirla antes de completar con memoria
   aproximada, aunque eso implique una vuelta adicional.
+
+## 2026-09-17 — "No se ve el cambio" en GitHub Pages: era caché del navegador, no el deploy
+- Síntoma: el usuario mandó una captura del formulario publicado mostrando
+  el nombre viejo ("Empresa de Distribución Eléctrica") y el buscador de
+  distrito sin resultados al escribir "Lima".
+- Causa real: el deploy de GitHub Pages estaba correcto y actualizado; el
+  navegador del usuario tenía cacheado un `config.js` viejo (de antes de
+  cambiar a "Luz del Sur" y agregar `DISTRITOS`). `config.js` se sirve con
+  `Cache-Control: max-age=600` desde el CDN de GitHub Pages, y el
+  navegador puede quedarse con una copia más vieja aún si no revalida.
+- Cómo se diagnosticó: `curl` directo a
+  `https://andersoncondezo7-ui.github.io/RegistroPoda/config.js` mostró
+  que el servidor ya tenía `NOMBRE_EMPRESA: "Luz del Sur"` y los 60
+  distritos — es decir, el problema no estaba del lado del repo/deploy.
+- Solución: pedir al usuario un hard refresh (Ctrl+Shift+R) o abrir en
+  incógnito. Lección: ante un "no se actualizó", verificar primero con
+  curl lo que el servidor realmente está sirviendo antes de tocar código
+  o el deploy — evita perseguir un bug que no existe.
+
+## 2026-09-17 — Diseño inicial de WhatsApp (Meta Cloud API) no era lo que el usuario quería
+- Síntoma: no fue un error técnico, sino un desvío de alcance: se diseñó
+  la notificación de WhatsApp con la WhatsApp Business Platform (Meta
+  Cloud API) desde Power Automate (tokens, plantillas aprobadas, HTTP
+  action), cuando el pedido original ("que me diga que he registrado
+  algo... simplemente lo vincules y se genere") ya insinuaba algo mucho
+  más simple.
+- Causa: se interpretó "plantilla para generar un mensaje de WhatsApp"
+  como una integración formal de negocio, en vez de preguntar primero por
+  el nivel de automatización esperado.
+- Solución: el usuario mostró capturas de su otra app ("Registroenvio"),
+  que arma el mensaje y redirige a `https://wa.me/{numero}?text=...` para
+  que la persona confirme el envío a mano — sin backend ni cuentas
+  externas. Se rediseñó todo el módulo sobre ese patrón (ver PROGRESS.md,
+  ronda del 2026-09-17). Lección: cuando el usuario describe algo de forma
+  ambigua y ya tiene un patrón de referencia funcionando en otro proyecto
+  propio, preguntar por esa referencia antes de diseñar desde cero.
