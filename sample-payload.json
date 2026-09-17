@@ -1,6 +1,6 @@
 {
   "fecha": "2026-09-17T15:30:00.000Z",
-  "municipalidad": "Municipalidad de Ejemplo",
+  "distrito": "Santiago de Surco",
   "direccion": "Av. Los Álamos 123, referencia frente al parque",
   "ubicacion": { "lat": -12.046374, "lng": -77.042793 },
   "situacionId": "ramas_tocando_cables",

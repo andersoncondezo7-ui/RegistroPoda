@@ -86,6 +86,86 @@ input:focus, select:focus {
   margin: 6px 0 0;
 }
 
+/* --- Buscador dinámico de distrito (combobox) --- */
+.combobox {
+  position: relative;
+}
+
+.combobox__lista {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.combobox__opcion {
+  padding: 10px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.92rem;
+}
+
+.combobox__opcion mark {
+  background: #cdeed9;
+  color: inherit;
+  border-radius: 3px;
+}
+
+.combobox__opcion:hover,
+.combobox__opcion.activa {
+  background: #eaf6ee;
+}
+
+.combobox__vacio {
+  padding: 10px;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.distrito-seleccionado {
+  border: 1.5px solid var(--verde);
+  background: #eaf6ee;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.distrito-seleccionado__cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--verde-oscuro);
+}
+
+.distrito-seleccionado__valor {
+  margin-top: 4px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--texto);
+}
+
+.link-cambiar {
+  background: none;
+  border: none;
+  color: var(--azul);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
 .btn-secundario {
   margin-top: 10px;
   background: #eef4f0;

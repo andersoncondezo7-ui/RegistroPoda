@@ -28,6 +28,7 @@ let ubicacionGPS = null;  // { lat, lng }
 document.addEventListener("DOMContentLoaded", () => {
   aplicarConfiguracion();
   renderTiposProblema();
+  configurarDistrito();
   configurarUbicacion();
   configurarFotos();
   configurarEnvio();
@@ -36,15 +37,121 @@ document.addEventListener("DOMContentLoaded", () => {
 function aplicarConfiguracion() {
   document.getElementById("nombreEmpresa").textContent = CONFIG.NOMBRE_EMPRESA || "Reporte de Poda";
   document.title = `Reporte de Poda — ${CONFIG.NOMBRE_EMPRESA || ""}`;
+  document.getElementById("maxFotosTexto").textContent = CONFIG.FOTOS?.maxCantidad ?? 5;
+}
 
-  const datalist = document.getElementById("listaMunicipalidades");
-  (CONFIG.MUNICIPALIDADES || []).forEach((nombre) => {
-    const opt = document.createElement("option");
-    opt.value = nombre;
-    datalist.appendChild(opt);
+function normalizarTexto(texto) {
+  return texto
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function configurarDistrito() {
+  const input = document.getElementById("buscadorDistrito");
+  const lista = document.getElementById("listaDistritoResultados");
+  const hidden = document.getElementById("distrito");
+  const bloqueSeleccionado = document.getElementById("distritoSeleccionado");
+  const valorSeleccionado = document.getElementById("distritoSeleccionadoValor");
+  const btnCambiar = document.getElementById("btnCambiarDistrito");
+  const distritos = CONFIG.DISTRITOS || [];
+
+  let resultados = [];
+  let indiceActivo = -1;
+
+  function cerrarLista() {
+    lista.hidden = true;
+    lista.innerHTML = "";
+    input.setAttribute("aria-expanded", "false");
+    indiceActivo = -1;
+  }
+
+  function resaltar(texto, consulta) {
+    const idx = normalizarTexto(texto).indexOf(consulta);
+    if (idx === -1 || !consulta) return texto;
+    return `${texto.slice(0, idx)}<mark>${texto.slice(idx, idx + consulta.length)}</mark>${texto.slice(idx + consulta.length)}`;
+  }
+
+  function mostrarResultados() {
+    const consulta = normalizarTexto(input.value);
+    resultados = consulta
+      ? distritos.filter((d) => normalizarTexto(d).includes(consulta)).slice(0, 8)
+      : distritos.slice(0, 8);
+
+    lista.innerHTML = "";
+    indiceActivo = -1;
+
+    if (resultados.length === 0) {
+      const vacio = document.createElement("li");
+      vacio.className = "combobox__vacio";
+      vacio.textContent = "No se encontraron distritos con ese nombre.";
+      lista.appendChild(vacio);
+    } else {
+      resultados.forEach((nombre, i) => {
+        const li = document.createElement("li");
+        li.className = "combobox__opcion";
+        li.role = "option";
+        li.id = `distritoOpcion-${i}`;
+        li.innerHTML = resaltar(nombre, consulta);
+        li.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          seleccionarDistrito(nombre);
+        });
+        lista.appendChild(li);
+      });
+    }
+    lista.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+  }
+
+  function marcarActiva() {
+    lista.querySelectorAll(".combobox__opcion").forEach((el, i) => {
+      el.classList.toggle("activa", i === indiceActivo);
+    });
+  }
+
+  function seleccionarDistrito(nombre) {
+    hidden.value = nombre;
+    valorSeleccionado.textContent = nombre;
+    bloqueSeleccionado.hidden = false;
+    document.getElementById("comboboxDistrito").hidden = true;
+    hidden.classList.remove("campo-invalido");
+    cerrarLista();
+  }
+
+  input.addEventListener("input", mostrarResultados);
+  input.addEventListener("focus", mostrarResultados);
+
+  input.addEventListener("keydown", (e) => {
+    if (lista.hidden) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      indiceActivo = Math.min(indiceActivo + 1, resultados.length - 1);
+      marcarActiva();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      indiceActivo = Math.max(indiceActivo - 1, 0);
+      marcarActiva();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (indiceActivo >= 0 && resultados[indiceActivo]) {
+        seleccionarDistrito(resultados[indiceActivo]);
+      }
+    } else if (e.key === "Escape") {
+      cerrarLista();
+    }
   });
 
-  document.getElementById("maxFotosTexto").textContent = CONFIG.FOTOS?.maxCantidad ?? 5;
+  input.addEventListener("blur", () => setTimeout(cerrarLista, 100));
+
+  btnCambiar.addEventListener("click", () => {
+    hidden.value = "";
+    bloqueSeleccionado.hidden = true;
+    document.getElementById("comboboxDistrito").hidden = false;
+    input.value = "";
+    input.focus();
+  });
 }
 
 function renderTiposProblema() {
@@ -174,7 +281,7 @@ function validarFormulario() {
     if (!ok) valido = false;
   };
 
-  marcar("municipalidad", document.getElementById("municipalidad").value.trim() !== "");
+  marcar("buscadorDistrito", document.getElementById("distrito").value.trim() !== "");
   marcar("direccion", document.getElementById("direccion").value.trim() !== "");
   marcar("nombreContacto", document.getElementById("nombreContacto").value.trim() !== "");
   marcar("telefonoContacto", document.getElementById("telefonoContacto").value.trim() !== "");
@@ -205,7 +312,7 @@ function construirPayload() {
 
   return {
     fecha: new Date().toISOString(),
-    municipalidad: document.getElementById("municipalidad").value.trim(),
+    distrito: document.getElementById("distrito").value.trim(),
     direccion: document.getElementById("direccion").value.trim(),
     ubicacion: ubicacionGPS,
     situacionId: tipo.id,
@@ -253,6 +360,9 @@ async function enviarReporte(payload) {
     document.getElementById("otroDetalleWrap").hidden = true;
     document.getElementById("ubicacionEstado").textContent = "";
     document.querySelectorAll(".situacion-card").forEach((c) => c.classList.remove("is-selected"));
+    document.getElementById("distritoSeleccionado").hidden = true;
+    document.getElementById("comboboxDistrito").hidden = false;
+    document.getElementById("buscadorDistrito").value = "";
     fotosProcesadas = [];
     ubicacionGPS = null;
   } catch (err) {

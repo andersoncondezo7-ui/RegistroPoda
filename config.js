@@ -10,13 +10,74 @@ const CONFIG = {
   POWER_AUTOMATE_URL: "PEGAR_AQUI_LA_URL_DEL_FLUJO_DE_POWER_AUTOMATE",
 
   // Nombre visible en el encabezado del formulario.
-  NOMBRE_EMPRESA: "Empresa de Distribución Eléctrica",
+  NOMBRE_EMPRESA: "Luz del Sur",
 
-  // Lista fija de municipalidades (opcional).
-  // Si se deja vacía [], el campo "Municipalidad" será de texto libre.
-  // Si se llena, el campo se muestra como lista desplegable.
-  // Ejemplo: ["Municipalidad de San Isidro", "Municipalidad de Miraflores"]
-  MUNICIPALIDADES: [],
+  // Distritos dentro de la zona de concesión de Luz del Sur (Lima
+  // Metropolitana + provincias de Huarochirí y Cañete). Tomados de
+  // Archivo/Distritos.xlsx (lista oficial de la empresa, 2026-09-17).
+  // Si falta o sobra alguno, este array es lo único que hay que editar.
+  DISTRITOS: [
+    "Asia",
+    "Ate-Vitarte",
+    "Barranco",
+    "Calango",
+    "Callahuanca",
+    "Carampoma",
+    "Cerro Azul",
+    "Chaclacayo",
+    "Chilca",
+    "Chorrillos",
+    "Cieneguilla",
+    "El Agustino",
+    "Huachupampa",
+    "Huanza",
+    "Imperial",
+    "Jesús María",
+    "La Molina",
+    "La Victoria",
+    "Laraos",
+    "Lima Cercado",
+    "Lince",
+    "Lunahuaná",
+    "Lurigancho-Chosica",
+    "Lurín",
+    "Mala",
+    "Matucana",
+    "Miraflores",
+    "Nuevo Imperial",
+    "Pacarán",
+    "Pachacámac",
+    "Pucusana",
+    "Punta Hermosa",
+    "Punta Negra",
+    "Quilmaná",
+    "Ricardo Palma",
+    "San Antonio",
+    "San Antonio de Chaclla",
+    "San Bartolo",
+    "San Bartolomé",
+    "San Borja",
+    "San Isidro",
+    "San Juan de Iris",
+    "San Juan de Miraflores",
+    "San Luis",
+    "San Luis de Cañete",
+    "San Mateo",
+    "San Mateo de Otao",
+    "San Pedro de Casta",
+    "San Vicente de Cañete",
+    "Santa Anita",
+    "Santa Cruz de Cocachacra",
+    "Santa Cruz de Flores",
+    "Santa Eulalia",
+    "Santa María", // ⚠️ el origen la lista así, a confirmar si es "Santa María del Mar"
+    "Santiago de Surco", // el origen también trae "Surco" como código aparte (42); se tomó como duplicado y no se agregó
+    "Santiago de Tuna",
+    "Surquillo",
+    "Villa El Salvador",
+    "Villa María del Triunfo",
+    "Zúñiga",
+  ],
 
   // Límites para las fotos adjuntas. Las fotos se comprimen automáticamente
   // en el navegador antes de enviarse, para no saturar el flujo de Power

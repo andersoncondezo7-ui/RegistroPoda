@@ -37,7 +37,7 @@
 
 ### Parseo del cuerpo como texto plano en Power Automate
 - Síntoma esperado: en el flujo, `triggerBody()` llega como string en vez de
-  objeto JSON, y las expresiones tipo `triggerBody()?['municipalidad']`
+  objeto JSON, y las expresiones tipo `triggerBody()?['distrito']`
   fallan.
 - Causa: se envía `Content-Type: text/plain` a propósito (ver CORS arriba).
 - Solución: agregar un paso "Analizar JSON" (Parse JSON) con
@@ -62,3 +62,19 @@
   requiere instalar nada ni guardar el token en `.git/config`. El token se
   revocó después del push. Repetir este mismo método para cualquier push
   futuro que no pueda hacerse desde la terminal propia del usuario.
+
+## 2026-09-17 — Lista de distritos armada de memoria tenía un distrito incorrecto y le faltaban 36
+- Síntoma: la primera versión de `config.js` → `DISTRITOS` tenía 25
+  distritos "de memoria" (advertidos explícitamente como no verificados),
+  incluyendo "San Juan de Lurigancho".
+- Causa: sin una fuente oficial a mano en ese momento, se usó conocimiento
+  general aproximado del área de concesión de Luz del Sur.
+- Solución: el usuario compartió `Archivo/Distritos.xlsx` (61 filas con
+  formato "código = NOMBRE"). Se extrajeron los nombres (ignorando los
+  códigos) y se comparó contra la lista anterior: "San Juan de Lurigancho"
+  **no** aparece en el archivo oficial (se quitó) y faltaban 36 distritos,
+  la mayoría de las provincias de Huarochirí y Cañete (se agregaron). Se
+  actualizó tanto `config.js` como la hoja "Listas" de
+  `RegistroPoda_Plantilla.xlsx`. Lección: cuando el usuario puede
+  proporcionar una fuente oficial, pedirla antes de completar con memoria
+  aproximada, aunque eso implique una vuelta adicional.

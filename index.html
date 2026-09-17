@@ -20,12 +20,26 @@
 
   <form id="formPoda" novalidate>
 
-    <!-- 1. Municipalidad -->
+    <!-- 1. Distrito -->
     <section class="campo">
-      <label for="municipalidad">1. Municipalidad <span class="req">*</span></label>
-      <input type="text" id="municipalidad" name="municipalidad" list="listaMunicipalidades"
-             placeholder="Ej: Municipalidad de..." autocomplete="off" required>
-      <datalist id="listaMunicipalidades"></datalist>
+      <label for="buscadorDistrito">1. Distrito <span class="req">*</span></label>
+
+      <div class="combobox" id="comboboxDistrito">
+        <input type="text" id="buscadorDistrito" autocomplete="off"
+               placeholder="Escriba para buscar su distrito..."
+               role="combobox" aria-expanded="false" aria-haspopup="listbox"
+               aria-controls="listaDistritoResultados" aria-autocomplete="list">
+        <ul id="listaDistritoResultados" class="combobox__lista" role="listbox" hidden></ul>
+      </div>
+      <input type="hidden" id="distrito" name="distrito" required>
+
+      <div id="distritoSeleccionado" class="distrito-seleccionado" hidden>
+        <div class="distrito-seleccionado__cabecera">
+          <span>✅ Distrito seleccionado</span>
+          <button type="button" id="btnCambiarDistrito" class="link-cambiar">Cambiar</button>
+        </div>
+        <div class="distrito-seleccionado__valor" id="distritoSeleccionadoValor"></div>
+      </div>
     </section>
 
     <!-- 2. Dirección o ubicación -->
