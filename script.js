@@ -19,7 +19,7 @@ const TIPOS_PROBLEMA = [
   { id: "cerca_viviendas", emoji: "🏠", texto: "Árbol o ramas cerca de viviendas y cables" },
   { id: "riesgo_peatones", emoji: "🚶", texto: "Árbol o ramas representan riesgo para peatones o vehículos" },
   { id: "vegetacion_crecida_postes", emoji: "🌱", texto: "Vegetación crecida alrededor de postes eléctricos" },
-  { id: "otro", emoji: "📷", texto: "Otro (adjuntar fotografía)" },
+  { id: "otro", emoji: "📷", texto: "Otro" },
 ];
 
 let fotosProcesadas = []; // [{ nombre, tipo, base64 }]
