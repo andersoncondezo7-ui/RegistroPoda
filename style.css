@@ -305,6 +305,10 @@ input[type="file"] {
 }
 
 /* --- Overlay "procesando envío" (antes de abrir WhatsApp) --- */
+.overlay[hidden] {
+  display: none;
+}
+
 .overlay {
   position: fixed;
   inset: 0;
