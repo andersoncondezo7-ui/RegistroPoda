@@ -145,9 +145,16 @@
 - [ ] Probar un envío real de extremo a extremo (formulario → Power Automate
       → SharePoint/Excel, y verificar que WhatsApp abre con el mensaje
       correcto en un celular real).
-- [ ] Hacer commit + push de esta tercera ronda de cambios (WhatsApp
-      simplificado, overlay de envío) — pendiente al
-      momento de escribir esto.
+- [x] Commit + push de la tercera ronda (WhatsApp simplificado, overlay de
+      envío) — commit `a4186a0`.
+- [x] **Bugfix**: el overlay "Procesando tu envío" se veía apenas se abría
+      el formulario, sin haber enviado nada. Causa: `.overlay` tenía
+      `display: flex` explícito en `style.css`, lo que pisaba el
+      `display: none` que el navegador aplica por el atributo `hidden`
+      (una regla de author-stylesheet con `display` distinto de `none`
+      gana sobre la regla UA por defecto de `[hidden]`, aunque el elemento
+      tenga el atributo). Se agregó `.overlay[hidden] { display: none; }`.
+      Commit `6468013`. Detalle completo en ERRORS.md.
 
 ## Decisiones tomadas (para no repreguntar)
 

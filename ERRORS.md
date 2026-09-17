@@ -48,6 +48,23 @@
 
 ## Historial real de incidencias
 
+## 2026-09-17 — El overlay "Procesando tu envío" aparecía sin hacer clic en Enviar
+- Síntoma: el usuario mandó una captura mostrando el overlay visible apenas
+  entrar al formulario, sin haber enviado nada.
+- Causa: `.overlay` en `style.css` tenía `display: flex` explícito. Una
+  regla de author-stylesheet con `display` distinto de `none` gana sobre
+  la regla por defecto del navegador `[hidden] { display: none }`, aunque
+  el elemento tenga el atributo `hidden`. Resultado: el overlay se
+  mostraba siempre, ignorando `hidden`.
+- Solución: se agregó `.overlay[hidden] { display: none; }` (mayor
+  especificidad que `.overlay` sola, por el selector de atributo extra) en
+  `style.css`. Corregido en el commit `6468013`.
+- Lección: cualquier elemento que se oculte con el atributo `hidden` y a
+  la vez tenga una clase con `display: flex/grid/block` propio necesita
+  una regla `.clase[hidden] { display: none; }` explícita — si se agregan
+  más overlays/paneles a futuro, revisar este mismo patrón antes de que
+  vuelva a pasar.
+
 ## 2026-09-17 — No se pudo instalar GitHub CLI (`gh`) para publicar el repo
 - Síntoma: `winget install --id GitHub.cli` descargó el instalador pero la
   instalación terminó con "Ha cancelado la instalación" / código 1602.
