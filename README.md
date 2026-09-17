@@ -90,13 +90,11 @@ Crea un **flujo de nube automatizado en blanco** con estos pasos:
 - Método: `POST`.
 - Esquema JSON del cuerpo: usa **"Usar carga útil de ejemplo para generar
   esquema"** y pega el contenido de [`sample-payload.json`](sample-payload.json).
-- **Importante (ver limitación de CORS más abajo):** el formulario envía el
-  cuerpo con `Content-Type: text/plain`, así que el disparador puede recibirlo
-  como texto. Agrega justo después un paso **Analizar JSON** (Parse JSON)
-  usando el mismo esquema, con el contenido:
-  `json(triggerBody())`
-  Así el resto del flujo puede usar los campos normalmente
-  (`distrito`, `direccion`, `situacionTexto`, `fotos`, etc.).
+- El formulario manda el cuerpo como `Content-Type: application/json` real
+  (esta URL de Power Platform sí soporta CORS correctamente, a diferencia
+  de las URLs viejas de Logic Apps — ver nota más abajo), así que
+  `triggerBody()` ya llega como objeto: se usa directo en todo el flujo,
+  **no hace falta ningún paso "Analizar JSON"**.
 
 ### Paso 2 — Construir la ruta de la carpeta del registro
 
@@ -119,14 +117,14 @@ distrito el mismo día).
 
 Agrega dos pasos **Inicializar variable**:
 - `rutaCarpeta` (String):
-  `Poda/@{body('Analizar_JSON')?['distrito']}/@{formatDateTime(utcNow(),'yyyy-MM')}/@{formatDateTime(utcNow(),'yyyy-MM-dd_HHmmss')}_@{body('Analizar_JSON')?['distrito']}`
+  `Poda/@{triggerBody()?['distrito']}/@{formatDateTime(utcNow(),'yyyy-MM')}/@{formatDateTime(utcNow(),'yyyy-MM-dd_HHmmss')}_@{triggerBody()?['distrito']}`
 - `enlacesFotos` (Array, vacío)
 
 Luego, acción **"Crear nueva carpeta"** (SharePoint) con esa `rutaCarpeta`
 (si ya existe, el paso falla; puedes configurar "Configurar ejecución" →
 seguir aunque falle, para el caso raro de colisión).
 
-### Paso 3 — "Aplicar a cada" sobre `fotos` (la salida del Parse JSON)
+### Paso 3 — "Aplicar a cada" sobre `fotos` (del disparador)
 Dentro del ciclo, por cada foto:
 
 1. **Crear archivo** (conector SharePoint)
@@ -149,14 +147,14 @@ agregar la fila:
 
 | Columna de la tabla | Valor a mapear |
 |---|---|
-| Fecha | `@{body('Analizar_JSON')?['fecha']}` |
-| Distrito | `@{body('Analizar_JSON')?['distrito']}` |
-| Direccion | `@{body('Analizar_JSON')?['direccion']}` |
-| Latitud | `@{body('Analizar_JSON')?['ubicacion']?['lat']}` |
-| Longitud | `@{body('Analizar_JSON')?['ubicacion']?['lng']}` |
-| Situacion | `@{body('Analizar_JSON')?['situacionTexto']}` |
-| NombreContacto | `@{body('Analizar_JSON')?['nombreContacto']}` |
-| Telefono | `@{body('Analizar_JSON')?['telefonoContacto']}` |
+| Fecha | `@{triggerBody()?['fecha']}` |
+| Distrito | `@{triggerBody()?['distrito']}` |
+| Direccion | `@{triggerBody()?['direccion']}` |
+| Latitud | `@{triggerBody()?['ubicacion']?['lat']}` |
+| Longitud | `@{triggerBody()?['ubicacion']?['lng']}` |
+| Situacion | `@{triggerBody()?['situacionTexto']}` |
+| NombreContacto | `@{triggerBody()?['nombreContacto']}` |
+| Telefono | `@{triggerBody()?['telefonoContacto']}` |
 | EnlacesFotos | `@{join(variables('enlacesFotos'), '; ')}` |
 | CarpetaRegistro | `@{outputs('Crear_nueva_carpeta')?['body/Path']}` (o el link equivalente) |
 
@@ -198,6 +196,10 @@ simple que ya usan en su app "Registroenvio":
    por enterado.
 4. El número de destino se configura en `config.js` →
    `WHATSAPP.numeroDestino` (hoy: `51963799933`, sin "+" ni espacios).
+5. WhatsApp **solo se abre si Power Automate respondió con éxito**
+   (`response.ok`). Si el guardado falla, se muestra un mensaje de error en
+   el formulario y no se abre WhatsApp — así no se le avisa a nadie de un
+   registro que en realidad no se guardó.
 
 Limitación a tener en cuenta: el mensaje se envía **desde el WhatsApp
 personal de quien llena el formulario**, no desde un número institucional
@@ -216,31 +218,34 @@ Al guardar, copia la **URL HTTP POST** generada en el disparador y pégala en
 
 ---
 
-## Limitación de CORS (importante)
+## Sobre CORS (ya resuelto, se documenta por si cambia la URL)
 
-El disparador HTTP de Power Automate no incluye encabezados CORS en su
-respuesta, así que un navegador no puede leer esa respuesta desde un dominio
-distinto (como `github.io`). Para evitarlo, el formulario:
+Las URLs de disparador de **Power Automate sobre Power Platform** (las que
+tienen el dominio `*.environment.api.powerplatform.com`, como la que usa
+este proyecto) **sí responden correctamente a la verificación CORS** del
+navegador — se comprobó en vivo con `curl` simulando el preflight
+(`OPTIONS`) y devuelve `Access-Control-Allow-Origin: *`. Por eso el
+formulario manda el `Content-Type: application/json` real, sin ningún
+truco, y además puede **leer la respuesta real** del disparador
+(`response.ok`) para saber si el registro se guardó antes de abrir
+WhatsApp.
 
-- Envía la petición con `mode: "no-cors"` y `Content-Type: text/plain`, lo
-  que evita el bloqueo del navegador (la petición sí llega al flujo).
-- A cambio, **no podemos confirmar desde el navegador si el flujo se
-  ejecutó correctamente** (solo si la petición salió de la red del
-  usuario). Que se abra WhatsApp con el mensaje-resumen indica que la
-  petición se envió, no que el flujo de Power Automate terminó sin errores
-  internos.
+⚠️ Esto **no es así en las URLs viejas de Logic Apps clásicas**
+(`*.logic.azure.com`) — esas sí bloquean CORS y necesitarían el truco de
+`mode: "no-cors"` + `Content-Type: text/plain` (con la limitación de que,
+en ese caso, no se puede leer la respuesta real). Si en algún momento la
+URL del flujo cambia a ese formato, hay que revisar `enviarReporte()` en
+`script.js`.
 
 Cómo verificar que todo funciona de extremo a extremo:
-1. Envía un reporte de prueba desde el formulario.
-2. Revisa en Power Automate → tu flujo → **Historial de ejecuciones** que
+1. Prueba el disparador directo con `curl` (ver
+   `power-automate/GUIA_FLUJO_POWER_AUTOMATE.md` → "Probar el disparador
+   directamente con curl") — si responde `202 Accepted`, el disparador está
+   bien.
+2. Envía un reporte de prueba desde el formulario.
+3. Revisa en Power Automate → tu flujo → **Historial de ejecuciones** que
    haya corrido correctamente.
-3. Confirma que aparece la fila en el Excel y el archivo en SharePoint.
-
-Si más adelante se necesita confirmación en tiempo real dentro del propio
-formulario (por ejemplo mostrar "guardado" solo cuando de verdad se guardó),
-la solución es poner un pequeño proxy (Azure Function o Logic App con CORS
-habilitado) entre el formulario y Power Automate. No es necesario para la
-primera versión.
+4. Confirma que aparece la fila en el Excel y el archivo en SharePoint.
 
 ## Notas de fotos y conectividad
 
@@ -254,5 +259,4 @@ reporta desde el campo con datos móviles. Ajustable en `config.js` →
 
 - Cola de reintento local (localStorage) para reportes que fallan por falta
   de conexión.
-- Proxy con CORS para confirmar en pantalla que el flujo terminó sin errores.
 - Estado del caso (pendiente/en proceso/atendido) editable desde otra vista.

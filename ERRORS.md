@@ -48,6 +48,54 @@
 
 ## Historial real de incidencias
 
+## 2026-09-17 — El formulario "enviaba" pero nada llegaba a Power Automate (error 400 invisible)
+- Síntoma: el usuario reportó que enviaba respuestas desde el formulario
+  (WhatsApp se abría normal) pero nada aparecía vinculado al flujo de
+  Power Automate — ni ejecuciones nuevas, ni filas en el Excel, ni fotos
+  en SharePoint.
+- Diagnóstico: se probó el disparador directo con `curl`, mandando el
+  mismo `Content-Type: text/plain` y `mode: no-cors` que usaba
+  `script.js`. Resultado real (invisible para el navegador por el
+  `no-cors`): **`400 Bad Request`**, con
+  `"code":"TriggerInputSchemaMismatch","message":"...Expected Object but
+  got String."`. O sea: el disparador **rechazaba la petición antes de
+  que el flujo llegara a ejecutarse**, porque con `Content-Type:
+  text/plain` Power Automate valida el cuerpo completo como si fuera un
+  string, no como el objeto que pide el esquema del disparador — nunca
+  llegaba a existir el paso "Analizar JSON" que se pensaba usar para
+  reconvertirlo, porque el rechazo pasa antes, a nivel del propio
+  disparador.
+- Por qué no se notó antes: `script.js` mandaba la petición con `fetch(...,
+  {mode: "no-cors"})`, que resuelve la promesa igual aunque el servidor
+  responda 400/500 (respuesta "opaca", sin código ni cuerpo visibles para
+  JS) — el formulario asumía éxito y abría WhatsApp igual.
+- Causa raíz de fondo: se asumió (sin probarlo) que esta URL de disparador
+  tenía la misma limitación de CORS que las URLs clásicas de Logic Apps,
+  y se diseñó todo el envío alrededor de esa suposición
+  (`text/plain` + `no-cors`) desde el principio del proyecto.
+- Cómo se confirmó la causa y la solución: se probó con `curl` mandando
+  `Content-Type: application/json` (JSON real) al mismo disparador →
+  `202 Accepted` con `x-ms-workflow-run-id` (ejecución real creada). Y se
+  probó un `OPTIONS` simulando el preflight del navegador → el disparador
+  respondió con `Access-Control-Allow-Origin: *` y los demás encabezados
+  CORS correctos. Es decir: **esta URL sí soporta CORS de verdad**, el
+  truco de `text/plain`/`no-cors` nunca hacía falta y de hecho era lo que
+  rompía todo.
+- Solución: `script.js` ahora manda `Content-Type: application/json` con
+  `fetch` normal (sin `mode: "no-cors"`), lee `response.ok` de verdad, y
+  solo abre WhatsApp si la respuesta fue exitosa (si falla, muestra un
+  error real al usuario). El paso "Analizar JSON" del flujo ya no hace
+  falta — `triggerBody()` llega parseado. Se actualizaron
+  `power-automate/GUIA_FLUJO_POWER_AUTOMATE.md` y `README.md` con las
+  expresiones corregidas (`triggerBody()?[...]` en vez de
+  `body('Analizar_JSON')?[...]`).
+- Lección: **nunca asumir el comportamiento de CORS/errores de un
+  endpoint sin probarlo con `curl` primero**, sobre todo cuando el diseño
+  usa `mode: "no-cors"` — ese modo oculta activamente cualquier error del
+  servidor. Antes de dar por buena una integración así, probar con curl
+  el código de respuesta real, no solo confiar en que el `fetch()` del
+  navegador "no tiró error".
+
 ## 2026-09-17 — El overlay "Procesando tu envío" aparecía sin hacer clic en Enviar
 - Síntoma: el usuario mandó una captura mostrando el overlay visible apenas
   entrar al formulario, sin haber enviado nada.

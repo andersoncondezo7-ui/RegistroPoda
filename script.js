@@ -342,29 +342,31 @@ async function enviarReporte(payload) {
   mostrarOverlayEnvio();
 
   try {
-    // Se usa 'no-cors' + Content-Type text/plain porque el disparador HTTP de
-    // Power Automate no responde a la verificación CORS (preflight) que los
-    // navegadores exigen para peticiones JSON entre dominios distintos.
-    // Con esta combinación la petición se envía como "solicitud simple" y el
-    // navegador no bloquea el envío, aunque no podemos leer la respuesta del
-    // flujo (ver README.md → sección "Limitación de CORS").
-    await fetch(CONFIG.POWER_AUTOMATE_URL, {
+    // El disparador HTTP de Power Automate (Power Platform) sí responde
+    // correctamente a la verificación CORS, así que se manda el JSON real
+    // (no hace falta el truco de Content-Type: text/plain + no-cors). Esto
+    // además permite leer la respuesta real y confirmar si el flujo aceptó
+    // el registro antes de abrir WhatsApp.
+    const respuesta = await fetch(CONFIG.POWER_AUTOMATE_URL, {
       method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
+    if (!respuesta.ok) {
+      throw new Error(`Power Automate respondió con estado ${respuesta.status}`);
+    }
+
     // Pequeña espera para que la pantalla de "procesando" alcance a verse
     // (igual que en Registroenvio) antes de saltar a WhatsApp.
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     limpiarFormulario();
     window.location.href = construirEnlaceWhatsApp(payload);
   } catch (err) {
     console.error("Error al enviar el reporte:", err);
     ocultarOverlayEnvio();
-    mostrarMensaje("❌ No se pudo enviar el reporte. Verifique su conexión a internet e intente nuevamente.", "error");
+    mostrarMensaje("❌ No se pudo guardar el reporte en el sistema. Verifique su conexión e intente nuevamente. (No se abrió WhatsApp porque el registro no se guardó.)", "error");
     boton.disabled = false;
   }
 }

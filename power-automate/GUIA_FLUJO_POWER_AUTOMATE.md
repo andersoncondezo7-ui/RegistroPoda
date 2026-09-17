@@ -13,21 +13,29 @@ Ten a la mano:
   (fotos + Excel).
 - Haber subido [`RegistroPoda_Plantilla.xlsx`](RegistroPoda_Plantilla.xlsx)
   a una biblioteca de documentos de ese sitio (si no lo hiciste aún, hazlo
-  antes del Paso 6).
+  antes del Paso 5).
 
 ## Estado actual de este proyecto
 
 ✅ **El disparador (Paso 1) ya existe** — la URL ya está pegada en
-`config.js` → `POWER_AUTOMATE_URL`:
-```
-https://default1c0051dd45964b1a9849d060735057.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/18/workflows/edc7c562ac794e5b9be26c9a16668b4f/triggers/manual/paths/invoke?...
-```
-Esta URL **no cambia** mientras no borres ni vuelvas a crear el
-disparador desde cero (agregar o editar pasos después del disparador no la
-afecta). Si alguna vez la regeneras, hay que actualizar `config.js` de
-nuevo.
+`config.js` → `POWER_AUTOMATE_URL`. Esta URL **no cambia** mientras no
+borres ni vuelvas a crear el disparador desde cero (agregar o editar pasos
+después del disparador no la afecta).
 
-Lo que falta armar dentro del flujo son los pasos 2 en adelante.
+⚠️ **2026-09-17 — Corrección importante:** la primera versión de esta guía
+pedía mandar el cuerpo como `Content-Type: text/plain` desde el navegador
+(para esquivar un supuesto bloqueo de CORS) y agregar un paso extra
+"Analizar JSON" para volver a convertirlo a objeto. Se probó en vivo contra
+esta URL con `curl` y **esa URL sí soporta CORS de verdad** (a diferencia
+de las URLs viejas de Logic Apps) — el truco de `text/plain` en realidad
+causaba que el disparador **rechazara la petición con error 400**
+(`TriggerInputSchemaMismatch: Expected Object but got String`), sin que el
+navegador se enterara (por eso el formulario parecía funcionar pero nada
+llegaba al flujo). Ya se corrigió en `script.js`: ahora se manda
+`Content-Type: application/json` directo, así que **ya no hace falta el
+paso "Analizar JSON"** — el disparador entrega el objeto ya parseado y se
+usa `triggerBody()` directo en todas las expresiones de abajo. Detalle
+completo en `../ERRORS.md`.
 
 ---
 
@@ -78,26 +86,12 @@ Lo que falta armar dentro del flujo son los pasos 2 en adelante.
 > con valores de ejemplo, por si Power Automate te pide "usar una carga
 > útil de ejemplo" en vez de un esquema directo.
 
-## Paso 2 — Acción "Analizar JSON" (Parse JSON)
+Con este esquema ya configurado, Power Automate te va a mostrar
+`distrito`, `direccion`, `situacionTexto`, etc. como **contenido dinámico**
+directo del disparador (sin ningún paso intermedio) en cualquier acción
+que agregues después.
 
-**Por qué hace falta:** el formulario envía el cuerpo con
-`Content-Type: text/plain` a propósito (para evitar el bloqueo de CORS del
-navegador — ver README.md → "Limitación de CORS"). Eso significa que
-`triggerBody()` llega como **texto**, no como objeto, así que hay que
-convertirlo.
-
-- Busca la acción **"Analizar JSON"**.
-- **Contenido**: `json(triggerBody())`
-- **Esquema**: el mismo JSON de arriba (puedes copiar/pegar el mismo
-  bloque, o usar "Generar desde ejemplo" con `sample-payload.json`).
-
-De aquí en adelante, todas las expresiones de esta guía usan
-`body('Analizar_JSON')` — si Power Automate le puso otro nombre a este
-paso (por ejemplo `Analizar_JSON_1`), ajusta el nombre en las expresiones
-o, mejor, renombra el paso a `Analizar_JSON` (los tres puntos → Cambiar
-nombre) para que las expresiones de esta guía funcionen tal cual.
-
-## Paso 3 — Dos "Inicializar variable"
+## Paso 2 — Dos "Inicializar variable"
 
 Agrega dos acciones **"Inicializar variable"**, una después de la otra:
 
@@ -106,7 +100,7 @@ Agrega dos acciones **"Inicializar variable"**, una después de la otra:
 - Tipo: `String`
 - Valor:
   ```
-  Poda/@{body('Analizar_JSON')?['distrito']}/@{formatDateTime(utcNow(),'yyyy-MM')}/@{formatDateTime(utcNow(),'yyyy-MM-dd_HHmmss')}_@{body('Analizar_JSON')?['distrito']}
+  Poda/@{triggerBody()?['distrito']}/@{formatDateTime(utcNow(),'yyyy-MM')}/@{formatDateTime(utcNow(),'yyyy-MM-dd_HHmmss')}_@{triggerBody()?['distrito']}
   ```
 
 **Variable 2**
@@ -114,7 +108,7 @@ Agrega dos acciones **"Inicializar variable"**, una después de la otra:
 - Tipo: `Array`
 - Valor: (déjalo vacío)
 
-## Paso 4 — Acción "Crear nueva carpeta" (SharePoint)
+## Paso 3 — Acción "Crear nueva carpeta" (SharePoint)
 
 - **Dirección del sitio**: elige tu sitio de SharePoint.
 - **Ruta de la carpeta a crear**: `Documentos compartidos/@{variables('rutaCarpeta')}`
@@ -129,26 +123,26 @@ ejecución después"** → marca también "ha fallado", por si alguna vez dos
 registros del mismo distrito caen exactamente en el mismo segundo (muy
 raro, pero así el flujo no se corta ahí).
 
-## Paso 5 — "Aplicar a cada" para subir las fotos
+## Paso 4 — "Aplicar a cada" para subir las fotos
 
 - Agrega un **"Aplicar a cada"**.
-- **Salida de entrada anterior**: `@{body('Analizar_JSON')?['fotos']}`
+- **Salida de entrada anterior**: `@{triggerBody()?['fotos']}`
 
 Dentro del ciclo, dos acciones:
 
-**5.1 — Crear archivo (SharePoint)**
+**4.1 — Crear archivo (SharePoint)**
 - Dirección del sitio: la misma de siempre.
 - Ruta de la biblioteca de documentos: `Documentos compartidos/@{variables('rutaCarpeta')}`
 - Nombre de archivo: `@{items('Aplicar_a_cada')['nombreArchivo']}`
 - Contenido del archivo: `@{base64ToBinary(items('Aplicar_a_cada')['contenidoBase64'])}`
 
-**5.2 — Anexar a variable de matriz**
+**4.2 — Anexar a variable de matriz**
 - Nombre: `enlacesFotos`
 - Valor: `@{outputs('Crear_archivo')?['body/{Link}']}`
   (si tu conector no tiene `{Link}`, prueba `{Path}` — depende de la
   versión del conector SharePoint que tengas).
 
-## Paso 6 — Registrar la fila en el Excel
+## Paso 5 — Registrar la fila en el Excel
 
 Elige **una** de las dos opciones (no hace falta hacer las dos):
 
@@ -162,14 +156,14 @@ Elige **una** de las dos opciones (no hace falta hacer las dos):
 
 | Columna de la tabla | Valor a pegar |
 |---|---|
-| Fecha | `@{body('Analizar_JSON')?['fecha']}` |
-| Distrito | `@{body('Analizar_JSON')?['distrito']}` |
-| Direccion | `@{body('Analizar_JSON')?['direccion']}` |
-| Latitud | `@{body('Analizar_JSON')?['ubicacion']?['lat']}` |
-| Longitud | `@{body('Analizar_JSON')?['ubicacion']?['lng']}` |
-| Situacion | `@{body('Analizar_JSON')?['situacionTexto']}` |
-| NombreContacto | `@{body('Analizar_JSON')?['nombreContacto']}` |
-| Telefono | `@{body('Analizar_JSON')?['telefonoContacto']}` |
+| Fecha | `@{triggerBody()?['fecha']}` |
+| Distrito | `@{triggerBody()?['distrito']}` |
+| Direccion | `@{triggerBody()?['direccion']}` |
+| Latitud | `@{triggerBody()?['ubicacion']?['lat']}` |
+| Longitud | `@{triggerBody()?['ubicacion']?['lng']}` |
+| Situacion | `@{triggerBody()?['situacionTexto']}` |
+| NombreContacto | `@{triggerBody()?['nombreContacto']}` |
+| Telefono | `@{triggerBody()?['telefonoContacto']}` |
 | EnlacesFotos | `@{join(variables('enlacesFotos'), '; ')}` |
 | CarpetaRegistro | `@{outputs('Crear_nueva_carpeta')?['body/Path']}` |
 
@@ -189,14 +183,14 @@ Elige **una** de las dos opciones (no hace falta hacer las dos):
 
 | Parámetro del script | Valor a pegar |
 |---|---|
-| fecha | `@{body('Analizar_JSON')?['fecha']}` |
-| distrito | `@{body('Analizar_JSON')?['distrito']}` |
-| direccion | `@{body('Analizar_JSON')?['direccion']}` |
-| latitud | `@{string(body('Analizar_JSON')?['ubicacion']?['lat'])}` |
-| longitud | `@{string(body('Analizar_JSON')?['ubicacion']?['lng'])}` |
-| situacion | `@{body('Analizar_JSON')?['situacionTexto']}` |
-| nombreContacto | `@{body('Analizar_JSON')?['nombreContacto']}` |
-| telefono | `@{body('Analizar_JSON')?['telefonoContacto']}` |
+| fecha | `@{triggerBody()?['fecha']}` |
+| distrito | `@{triggerBody()?['distrito']}` |
+| direccion | `@{triggerBody()?['direccion']}` |
+| latitud | `@{string(triggerBody()?['ubicacion']?['lat'])}` |
+| longitud | `@{string(triggerBody()?['ubicacion']?['lng'])}` |
+| situacion | `@{triggerBody()?['situacionTexto']}` |
+| nombreContacto | `@{triggerBody()?['nombreContacto']}` |
+| telefono | `@{triggerBody()?['telefonoContacto']}` |
 | enlacesFotos | `@{join(variables('enlacesFotos'), '; ')}` |
 | carpetaRegistro | `@{outputs('Crear_nueva_carpeta')?['body/Path']}` |
 
@@ -205,15 +199,17 @@ Elige **una** de las dos opciones (no hace falta hacer las dos):
 > no tiene GPS, ese valor llegará como `null`/vacío y el script lo guarda
 > tal cual, sin error.
 
-## Paso 7 — Notificación por WhatsApp: **no va acá**
+## Paso 6 — Notificación por WhatsApp: **no va acá**
 
 El aviso por WhatsApp **no es parte de este flujo**. Lo dispara el propio
-navegador (`script.js`) justo después de mandar la petición a este
-disparador, con un enlace `https://wa.me/...` y un mensaje ya armado — ver
-README.md → sección 3, Paso 5, para el detalle. No hace falta agregar
-ninguna acción de WhatsApp aquí.
+navegador (`script.js`) justo después de recibir una respuesta exitosa de
+este disparador, con un enlace `https://wa.me/...` y un mensaje ya armado
+— ver README.md → sección 3, Paso 5, para el detalle. No hace falta
+agregar ninguna acción de WhatsApp aquí. Si el flujo falla, el navegador
+ya no abre WhatsApp (se corrigió junto con lo del Content-Type — antes
+abría WhatsApp igual, aunque el guardado hubiera fallado).
 
-## Paso 8 — Guardar y probar
+## Paso 7 — Guardar y probar
 
 1. Guarda el flujo.
 2. Botón **"Probar"** (arriba a la derecha) → "Manualmente" → Guardar y
@@ -229,20 +225,40 @@ ninguna acción de WhatsApp aquí.
    - Se agregó la fila nueva en `TablaPoda` dentro de
      `RegistroPoda_Plantilla.xlsx`.
 
+### Probar el disparador directamente con curl (sin pasar por el formulario)
+
+Útil para descartar si el problema está en el disparador o más adelante en
+el flujo:
+
+```bash
+curl -i -X POST "TU_URL_DE_POWER_AUTOMATE" \
+  -H "Content-Type: application/json" \
+  --data-binary @sample-payload.json
+```
+
+- **`202 Accepted`** (con un header `x-ms-workflow-run-id`) → el
+  disparador aceptó la petición y creó una ejecución real. Si aun así no
+  ves nada en SharePoint/Excel, el problema está en los pasos 2 en
+  adelante — revisa el historial de ejecuciones.
+- **`400 Bad Request`** con `"TriggerInputSchemaMismatch"` → el cuerpo no
+  coincide con el esquema del disparador (revisa el `Content-Type` que
+  estás mandando, o el esquema del Paso 1).
+- **`404`** o **`401`/`403`** → la URL está mal copiada, vencida, o el
+  disparador fue borrado/recreado (hay que actualizar `config.js`).
+
 ## Problemas comunes
 
-- **"Analizar JSON" falla o los campos llegan vacíos** → revisa que el
-  contenido del paso sea exactamente `json(triggerBody())` y no
-  `triggerBody()` a secas (sin el `json(...)` alrededor, el texto plano no
-  se convierte a objeto).
+- **El formulario "se envía" pero no aparece nada en Power Automate** →
+  esto ya pasó una vez (ver el aviso al inicio de esta guía): probar
+  siempre primero con el `curl` de arriba para confirmar que el
+  disparador realmente acepta la petición (código `202`), antes de asumir
+  que el problema está en los pasos siguientes del flujo.
 - **La carpeta ya existe / el paso "Crear nueva carpeta" falla** → normal
   si se prueba dos veces seguidas muy rápido con los mismos datos (mismo
   distrito, mismo segundo). En producción casi no pasa porque el nombre de
   carpeta incluye hora, minuto y segundo.
-- **La fila del Excel sale con columnas vacías** → normalmente es un
-  nombre de paso mal escrito en la expresión (por ejemplo
-  `body('Analizar_JSON')` vs `body('Analizar_JSON_1')` si Power Automate
-  le puso un número al final). Revisa el nombre real del paso en el
-  diseñador y ajusta las expresiones.
+- **La fila del Excel sale con columnas vacías** → revisa que las
+  expresiones digan `triggerBody()?['...']` con el nombre de campo exacto
+  (en minúsculas, tal como está en el JSON: `distrito`, no `Distrito`).
 - Para cualquier otro error, revisa primero [`../ERRORS.md`](../ERRORS.md)
   — puede que ya esté documentado ahí.

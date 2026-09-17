@@ -3,7 +3,13 @@
 > Léeme primero. Aquí se registra qué se hizo y qué falta, para no tener que
 > repasar toda la conversación en cada sesión nueva.
 
-## Estado actual: 🟡 URL de Power Automate ya configurada — falta terminar de armar el flujo (Pasos 2 a 6)
+## Estado actual: 🟡 Bug crítico de envío corregido — falta terminar de armar el flujo y volver a probar
+
+- **Importante**: se encontró y corrigió un bug que hacía que **ningún**
+  envío del formulario llegara realmente a Power Automate (ver detalle en
+  "Hecho" más abajo, ronda del 2026-09-17 / quinta). Si habías probado el
+  formulario antes de este fix, ningún dato de esas pruebas se guardó en
+  ningún lado — hay que volver a probar ahora que está corregido.
 
 - Sitio publicado: https://andersoncondezo7-ui.github.io/RegistroPoda/
   (confirmado con curl el 2026-09-17 que sirve el contenido correcto; si
@@ -138,13 +144,49 @@
       (disparador) ya está hecho. Enlazada desde README.md → sección 3.
 - [x] GitHub Pages confirmado activo (no hace falta activarlo, ya estaba).
 
+## Hecho (2026-09-17, quinta ronda — bug crítico: nada llegaba a Power Automate)
+
+- [x] **El usuario reportó "envío respuestas pero no se vincula con el
+      flujo"**. Se probó el disparador real con `curl` (mismo
+      `Content-Type: text/plain` + `no-cors` que usaba `script.js`) y dio
+      **`400 Bad Request` / `TriggerInputSchemaMismatch: Expected Object
+      but got String`** — el disparador rechazaba TODAS las peticiones
+      del formulario desde el principio, y el `mode: "no-cors"` ocultaba
+      ese error por completo (el navegador veía "éxito" y abría WhatsApp
+      igual, sin haber guardado nada).
+- [x] Se probó con `curl` que esta URL de disparador (dominio
+      `*.environment.api.powerplatform.com`, Power Platform) **sí soporta
+      CORS de verdad** (`OPTIONS` responde con
+      `Access-Control-Allow-Origin: *`), a diferencia de las URLs viejas
+      de Logic Apps — la suposición de que hacía falta el truco de
+      `text/plain`/`no-cors` era incorrecta desde el diseño original de
+      este proyecto y nunca se probó en vivo hasta ahora.
+- [x] **Corregido `script.js`**: ahora manda `Content-Type: application/json`
+      real con `fetch` normal (sin `no-cors`), valida `response.ok`, y
+      **solo abre WhatsApp si el guardado fue exitoso** (antes lo abría
+      siempre, aunque fallara). Confirmado con curl: `202 Accepted` +
+      `x-ms-workflow-run-id` real.
+- [x] Como el disparador ya no necesita `text/plain`, **el paso "Analizar
+      JSON" del flujo ya no hace falta** — se simplifica a usar
+      `triggerBody()?[...]` directo. Se reescribieron
+      `power-automate/GUIA_FLUJO_POWER_AUTOMATE.md` (con una sección nueva
+      "Probar el disparador directamente con curl") y `README.md`
+      (sección "Sobre CORS") con las expresiones corregidas.
+- [x] Detalle completo del diagnóstico en `ERRORS.md` (entrada del
+      2026-09-17, "El formulario 'enviaba' pero nada llegaba a Power
+      Automate").
+- [ ] **Falta que el usuario vuelva a probar** un envío real desde el
+      formulario publicado y confirme en el Historial de ejecuciones de
+      Power Automate que ahora sí aparece la ejecución.
+
 ## Pendiente / próximos pasos
 
 - [ ] **Terminar de armar el flujo en Power Automate** siguiendo
-      `power-automate/GUIA_FLUJO_POWER_AUTOMATE.md` (Pasos 2 a 6: Parse
-      JSON, variables, crear carpeta, subir fotos, fila del Excel). El
-      disparador (Paso 1) ya existe. No se puede automatizar desde aquí:
-      Power Automate se configura en su portal web, no por código.
+      `power-automate/GUIA_FLUJO_POWER_AUTOMATE.md` (Pasos 2 a 5: crear
+      carpeta, subir fotos, fila del Excel — ya no hay paso de Parse
+      JSON). El disparador (Paso 1) ya existe y ya se confirmó que acepta
+      peticiones reales. No se puede automatizar desde aquí: Power
+      Automate se configura en su portal web, no por código.
 - [ ] Subir `power-automate/RegistroPoda_Plantilla.xlsx` a la biblioteca de
       SharePoint elegida (ya trae la tabla `TablaPoda` y la validación de
       distritos armada, no hace falta crearla desde cero).
