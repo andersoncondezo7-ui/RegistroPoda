@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte de Poda — Solicitud de Municipalidad</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌳</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="app-header">
+    <div class="app-header__icon">🌳⚡</div>
+    <div>
+      <h1 id="nombreEmpresa">Reporte de Poda</h1>
+      <p class="app-header__subtitle">Registro de solicitudes de poda derivadas por la municipalidad</p>
+    </div>
+  </header>
+
+  <form id="formPoda" novalidate>
+
+    <!-- 1. Municipalidad -->
+    <section class="campo">
+      <label for="municipalidad">1. Municipalidad <span class="req">*</span></label>
+      <input type="text" id="municipalidad" name="municipalidad" list="listaMunicipalidades"
+             placeholder="Ej: Municipalidad de..." autocomplete="off" required>
+      <datalist id="listaMunicipalidades"></datalist>
+    </section>
+
+    <!-- 2. Dirección o ubicación -->
+    <section class="campo">
+      <label for="direccion">2. Dirección o ubicación <span class="req">*</span></label>
+      <input type="text" id="direccion" name="direccion"
+             placeholder="Calle, número, referencia..." required>
+      <button type="button" id="btnUbicacion" class="btn-secundario">📍 Usar mi ubicación GPS (opcional)</button>
+      <p id="ubicacionEstado" class="ayuda" aria-live="polite"></p>
+    </section>
+
+    <!-- 3. Situación observada -->
+    <section class="campo">
+      <fieldset>
+        <legend>3. ¿Qué situación observa? <span class="req">*</span></legend>
+        <div id="situacionGrid" class="situacion-grid" role="radiogroup" aria-required="true"></div>
+        <div id="otroDetalleWrap" class="campo campo--otro" hidden>
+          <label for="otroDetalle">Describa brevemente la situación</label>
+          <input type="text" id="otroDetalle" name="otroDetalle" placeholder="Detalle...">
+        </div>
+      </fieldset>
+    </section>
+
+    <!-- 4. Foto(s) -->
+    <section class="campo">
+      <label for="fotos">4. Foto(s) <span class="req">*</span></label>
+      <input type="file" id="fotos" name="fotos" accept="image/*" multiple>
+      <p class="ayuda">Puede adjuntar hasta <span id="maxFotosTexto">5</span> fotos. Se comprimen automáticamente antes de enviarse.</p>
+      <div id="previewFotos" class="preview-fotos"></div>
+    </section>
+
+    <!-- 5. Nombre y teléfono de contacto -->
+    <section class="campo">
+      <fieldset>
+        <legend>5. Nombre y teléfono de contacto <span class="req">*</span></legend>
+        <div class="fila-doble">
+          <div>
+            <label for="nombreContacto">Nombre</label>
+            <input type="text" id="nombreContacto" name="nombreContacto" placeholder="Nombre completo" required>
+          </div>
+          <div>
+            <label for="telefonoContacto">Teléfono</label>
+            <input type="tel" id="telefonoContacto" name="telefonoContacto" placeholder="9XXXXXXXX" required>
+          </div>
+        </div>
+      </fieldset>
+    </section>
+
+    <button type="submit" id="btnEnviar" class="btn-primario">📤 Enviar reporte</button>
+
+    <div id="mensajeEstado" class="mensaje-estado" role="status" aria-live="polite" hidden></div>
+
+  </form>
+
+  <footer class="app-footer">
+    <p>Los datos enviados se registran automáticamente. No comparta información sensible adicional en este formulario.</p>
+  </footer>
+
+</div>
+
+<script src="config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

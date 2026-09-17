@@ -1,0 +1,225 @@
+:root {
+  --verde: #1e7d3c;
+  --verde-oscuro: #145a2a;
+  --azul: #0d5aa7;
+  --fondo: #f4f6f5;
+  --tarjeta: #ffffff;
+  --borde: #d8dfdb;
+  --texto: #1f2a24;
+  --texto-suave: #5a655f;
+  --error: #b3261e;
+  --exito: #1e7d3c;
+  --radio: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 4px 24px;
+}
+
+.app-header__icon { font-size: 2.2rem; line-height: 1; }
+
+.app-header h1 { margin: 0 0 4px; font-size: 1.3rem; color: var(--verde-oscuro); }
+.app-header__subtitle { margin: 0; font-size: 0.85rem; color: var(--texto-suave); }
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.campo {
+  background: var(--tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 16px;
+}
+
+.campo > label, fieldset legend {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+fieldset { border: none; padding: 0; margin: 0; }
+
+.req { color: var(--error); }
+
+input[type="text"],
+input[type="tel"],
+select {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fff;
+  color: var(--texto);
+}
+
+input:focus, select:focus {
+  outline: 2px solid var(--azul);
+  outline-offset: 1px;
+}
+
+.ayuda {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  margin: 6px 0 0;
+}
+
+.btn-secundario {
+  margin-top: 10px;
+  background: #eef4f0;
+  border: 1px solid var(--borde);
+  color: var(--verde-oscuro);
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.btn-secundario:active { transform: scale(0.98); }
+
+.fila-doble {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.fila-doble label { font-weight: 500; font-size: 0.85rem; margin-bottom: 4px; }
+
+/* --- Tarjetas de clasificación visual --- */
+.situacion-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 420px) {
+  .situacion-grid { grid-template-columns: 1fr; }
+}
+
+.situacion-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid var(--borde);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: #fbfcfb;
+  transition: border-color .15s, background .15s;
+}
+
+.situacion-card:hover { border-color: var(--azul); }
+
+.situacion-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px; height: 1px;
+}
+
+.situacion-card__emoji { font-size: 1.4rem; flex-shrink: 0; }
+.situacion-card__texto { font-size: 0.82rem; line-height: 1.25; }
+
+.situacion-card:has(input:checked),
+.situacion-card.is-selected {
+  border-color: var(--verde);
+  background: #eaf6ee;
+  box-shadow: 0 0 0 1px var(--verde);
+}
+
+.situacion-card input:focus-visible ~ .situacion-card__texto,
+.situacion-card:focus-within {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+}
+
+/* --- Fotos --- */
+input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border: 1.5px dashed var(--borde);
+  border-radius: 8px;
+  background: #fbfcfb;
+  font-size: 0.9rem;
+}
+
+.preview-fotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.preview-item {
+  position: relative;
+  width: 78px;
+  height: 78px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--borde);
+}
+.preview-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.preview-item button {
+  position: absolute;
+  top: 2px; right: 2px;
+  background: rgba(0,0,0,.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* --- Botón enviar / mensajes --- */
+.btn-primario {
+  background: var(--verde);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-primario:disabled { opacity: .6; cursor: progress; }
+.btn-primario:not(:disabled):active { transform: scale(0.99); }
+
+.mensaje-estado {
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+}
+.mensaje-estado--exito { background: #eaf6ee; color: var(--exito); border: 1px solid #bfe3c9; }
+.mensaje-estado--error { background: #fbeceb; color: var(--error); border: 1px solid #f1c3c0; }
+.mensaje-estado--cargando { background: #eef4fb; color: var(--azul); border: 1px solid #c7dcf3; }
+
+.campo-invalido { border-color: var(--error) !important; }
+
+.app-footer {
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 0.75rem;
+  margin-top: 24px;
+}

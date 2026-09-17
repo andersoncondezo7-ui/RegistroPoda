@@ -1,0 +1,17 @@
+{
+  "fecha": "2026-09-17T15:30:00.000Z",
+  "municipalidad": "Municipalidad de Ejemplo",
+  "direccion": "Av. Los Álamos 123, referencia frente al parque",
+  "ubicacion": { "lat": -12.046374, "lng": -77.042793 },
+  "situacionId": "ramas_tocando_cables",
+  "situacionTexto": "⚡ Ramas tocando los cables",
+  "nombreContacto": "Juan Pérez",
+  "telefonoContacto": "987654321",
+  "fotos": [
+    {
+      "nombreArchivo": "foto1.jpg",
+      "tipoContenido": "image/jpeg",
+      "contenidoBase64": "BASE64_DE_EJEMPLO_RECORTADO..."
+    }
+  ]
+}
