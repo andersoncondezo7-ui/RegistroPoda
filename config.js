@@ -7,7 +7,7 @@ const CONFIG = {
   // URL del disparador HTTP del flujo de Power Automate
   // ("Cuando se recibe una solicitud HTTP"). Se obtiene DESPUÉS de crear
   // y guardar el flujo. Ver README.md → sección "3. Power Automate".
-  POWER_AUTOMATE_URL: "PEGAR_AQUI_LA_URL_DEL_FLUJO_DE_POWER_AUTOMATE",
+  POWER_AUTOMATE_URL: "https://default1c0051dd45964b1a9849d060735057.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/18/workflows/edc7c562ac794e5b9be26c9a16668b4f/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=UqsVLv6gFAJwkOoJW1oxqPlZZNTxnnWvUokZGEZ-poQ",
 
   // Nombre visible en el encabezado del formulario.
   NOMBRE_EMPRESA: "Luz del Sur",
