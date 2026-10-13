@@ -191,36 +191,56 @@ function enlaceMapas(lat, lng) {
   return `https://www.google.com/maps?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
 }
 
+function mostrarPuntoCapturado() {
+  const enlace = document.getElementById("ubicacionLink").value;
+  document.getElementById("puntoCoordenadas").textContent =
+    `${ubicacionGPS.lat.toFixed(6)}, ${ubicacionGPS.lng.toFixed(6)}`;
+  document.getElementById("puntoEnlace").href = enlace;
+  document.getElementById("puntoCapturado").hidden = false;
+  document.getElementById("btnUbicacion").hidden = true;
+  document.getElementById("ubicacionEstado").textContent = "";
+}
+
+function ocultarPuntoCapturado() {
+  document.getElementById("puntoCapturado").hidden = true;
+  document.getElementById("btnUbicacion").hidden = false;
+  document.getElementById("ubicacionEstado").textContent = "";
+}
+
 function configurarUbicacion() {
   const btn = document.getElementById("btnUbicacion");
   const estado = document.getElementById("ubicacionEstado");
   const inputLink = document.getElementById("ubicacionLink");
 
-  // Si la persona edita o pega el enlace a mano, las coordenadas del GPS ya
-  // no corresponden a ese enlace.
-  inputLink.addEventListener("input", () => {
-    ubicacionGPS = null;
-    inputLink.classList.remove("campo-invalido");
-  });
-
-  btn.addEventListener("click", () => {
+  function capturar() {
     if (!navigator.geolocation) {
-      estado.textContent = "Este dispositivo no permite obtener la ubicación automáticamente. Pegue un enlace de Google Maps.";
+      estado.textContent = "Este dispositivo o navegador no permite obtener la ubicación. Use otro dispositivo para registrar el caso.";
       return;
     }
-    estado.textContent = "Obteniendo ubicación...";
+    btn.disabled = true;
+    estado.textContent = "Obteniendo ubicación... acepte el permiso de ubicación si el navegador lo solicita.";
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         ubicacionGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         inputLink.value = enlaceMapas(ubicacionGPS.lat, ubicacionGPS.lng);
-        inputLink.classList.remove("campo-invalido");
-        estado.textContent = `✅ Punto capturado (${ubicacionGPS.lat.toFixed(5)}, ${ubicacionGPS.lng.toFixed(5)})`;
+        btn.classList.remove("campo-invalido");
+        btn.disabled = false;
+        mostrarPuntoCapturado();
       },
       () => {
-        estado.textContent = "No se pudo obtener la ubicación. Pegue un enlace de Google Maps del punto.";
+        btn.disabled = false;
+        estado.textContent = "No se pudo obtener la ubicación. Verifique que el GPS y el permiso de ubicación del navegador estén activos e intente de nuevo.";
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 15000 }
     );
+  }
+
+  btn.addEventListener("click", capturar);
+  document.getElementById("btnRecapturar").addEventListener("click", () => {
+    ubicacionGPS = null;
+    inputLink.value = "";
+    ocultarPuntoCapturado();
+    capturar();
   });
 }
 
@@ -313,11 +333,7 @@ function validarFormulario() {
   marcar("nombreContacto", document.getElementById("nombreContacto").value.trim() !== "");
   marcar("telefonoContacto", document.getElementById("telefonoContacto").value.trim() !== "");
 
-  const link = document.getElementById("ubicacionLink").value.trim();
-  const linkValido = /^https?:\/\/\S+$/i.test(link);
-  if (CONFIG.UBICACION_LINK_OBLIGATORIO || link !== "") {
-    marcar("ubicacionLink", linkValido);
-  }
+  marcar("btnUbicacion", ubicacionGPS !== null);
 
   if (!document.querySelector('input[name="criticidad"]:checked')) valido = false;
 
@@ -404,9 +420,10 @@ async function enviarReporte(payload) {
 
 function limpiarFormulario() {
   document.getElementById("formPoda").reset();
+  document.getElementById("ubicacionLink").value = "";
   document.getElementById("previewFotos").innerHTML = "";
   document.getElementById("activoReferencia").hidden = true;
-  document.getElementById("ubicacionEstado").textContent = "";
+  ocultarPuntoCapturado();
   document.querySelectorAll(".criticidad-card").forEach((c) => c.classList.remove("is-selected"));
   document.getElementById("distritoSeleccionado").hidden = true;
   document.getElementById("comboboxDistrito").hidden = false;

@@ -42,10 +42,11 @@ texto listo). No requiere cuenta de WhatsApp Business API.
 2. **Tipo de activo** — desplegable (Poste MT, Suministro, Subestación) que
    muestra la foto referencial del activo elegido (`config.js` →
    `TIPOS_ACTIVO`)
-3. **Dirección o ubicación** + **enlace del punto georreferencial**: el
-   botón de GPS completa el enlace de Google Maps automáticamente; si no hay
-   GPS se puede pegar un enlace a mano. Es obligatorio
-   (`config.js` → `UBICACION_LINK_OBLIGATORIO`)
+3. **Dirección o ubicación** + **punto georreferencial (obligatorio)**: el
+   botón "Obtener punto georreferencial" captura el GPS del dispositivo y
+   genera un enlace de Google Maps (se muestra en una tarjeta con "Ver en
+   Google Maps" y "Volver a capturar"). Sin GPS capturado no se puede
+   enviar el reporte; ya no se puede pegar un enlace a mano.
 4. **Nivel de criticidad** — Riesgo Inminente / Tipo A / Tipo B / Tipo C,
    según la distancia de las ramas a la red de media tensión, con foto
    referencial por nivel (`config.js` → `NIVELES_CRITICIDAD`). Reemplaza a

@@ -133,14 +133,14 @@ input:focus, select:focus {
   color: var(--texto-suave);
 }
 
-.distrito-seleccionado {
+.tarjeta-seleccion {
   border: 1.5px solid var(--verde);
   background: #eaf6ee;
   border-radius: 10px;
   padding: 12px 14px;
 }
 
-.distrito-seleccionado__cabecera {
+.tarjeta-seleccion__cabecera {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -149,7 +149,7 @@ input:focus, select:focus {
   color: var(--verde-oscuro);
 }
 
-.distrito-seleccionado__valor {
+.tarjeta-seleccion__valor {
   margin-top: 4px;
   font-size: 1.05rem;
   font-weight: 600;
@@ -410,4 +410,22 @@ input[type="file"] {
   padding: 10px 12px;
   font-size: 0.82rem;
   text-align: left;
+}
+
+/* --- Punto georreferencial (GPS obligatorio) --- */
+.punto-gps {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--borde);
+}
+.punto-gps .subetiqueta { margin: 0 0 4px; }
+.punto-gps .btn-gps { margin-top: 0; width: 100%; padding: 12px; font-weight: 600; }
+.punto-gps .tarjeta-seleccion { margin-top: 10px; }
+.tarjeta-seleccion[hidden] { display: none; }
+.punto-enlace {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--azul);
 }

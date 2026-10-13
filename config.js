@@ -98,10 +98,6 @@ const CONFIG = {
     { id: "tipo_c", texto: "Tipo C", regla: "2 m < Ramas", imagen: "img/referencias/criticidad-tipo-c.svg" },
   ],
 
-  // Si es true, el reporte no se envía sin un punto georreferenciado
-  // (capturado con GPS o pegado como enlace de Google Maps).
-  UBICACION_LINK_OBLIGATORIO: true,
-
   // Límites para las fotos adjuntas. Las fotos se comprimen automáticamente
   // en el navegador antes de enviarse, para no saturar el flujo de Power
   // Automate ni la conexión de datos móvil de quien reporta.

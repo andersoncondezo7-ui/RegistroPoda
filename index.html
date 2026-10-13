@@ -33,12 +33,12 @@
       </div>
       <input type="hidden" id="distrito" name="distrito" required>
 
-      <div id="distritoSeleccionado" class="distrito-seleccionado" hidden>
-        <div class="distrito-seleccionado__cabecera">
+      <div id="distritoSeleccionado" class="tarjeta-seleccion" hidden>
+        <div class="tarjeta-seleccion__cabecera">
           <span>✅ Distrito seleccionado</span>
           <button type="button" id="btnCambiarDistrito" class="link-cambiar">Cambiar</button>
         </div>
-        <div class="distrito-seleccionado__valor" id="distritoSeleccionadoValor"></div>
+        <div class="tarjeta-seleccion__valor" id="distritoSeleccionadoValor"></div>
       </div>
     </section>
 
@@ -59,11 +59,23 @@
       <label for="direccion">3. Dirección o ubicación <span class="req">*</span></label>
       <input type="text" id="direccion" name="direccion"
              placeholder="Calle, número, referencia..." required>
-      <button type="button" id="btnUbicacion" class="btn-secundario">📍 Obtener punto georreferencial (GPS)</button>
-      <p id="ubicacionEstado" class="ayuda" aria-live="polite"></p>
-      <label for="ubicacionLink" class="subetiqueta">Enlace del punto georreferencial <span class="req">*</span></label>
-      <input type="url" id="ubicacionLink" name="ubicacionLink" inputmode="url"
-             placeholder="Se completa con el GPS, o pegue un enlace de Google Maps">
+
+      <div class="punto-gps">
+        <span class="subetiqueta">Punto georreferencial <span class="req">*</span></span>
+        <p class="ayuda ayuda--arriba">Colóquese en el lugar del activo y presione el botón para capturar el punto.</p>
+        <button type="button" id="btnUbicacion" class="btn-secundario btn-gps">📍 Obtener punto georreferencial</button>
+        <p id="ubicacionEstado" class="ayuda" aria-live="polite"></p>
+        <input type="hidden" id="ubicacionLink" name="ubicacionLink">
+
+        <div id="puntoCapturado" class="tarjeta-seleccion" hidden>
+          <div class="tarjeta-seleccion__cabecera">
+            <span>✅ Punto capturado</span>
+            <button type="button" id="btnRecapturar" class="link-cambiar">Volver a capturar</button>
+          </div>
+          <div class="tarjeta-seleccion__valor" id="puntoCoordenadas"></div>
+          <a id="puntoEnlace" class="punto-enlace" href="#" target="_blank" rel="noopener">Ver en Google Maps ↗</a>
+        </div>
+      </div>
     </section>
 
     <!-- 4. Nivel de criticidad -->

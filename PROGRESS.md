@@ -186,10 +186,15 @@ Pedido recibido (4 puntos) y su resolución:
 - [x] **Tipo de activo** (desplegable: Poste MT, Suministro, Subestación)
       con foto referencial que aparece al elegir. Definido en
       `config.js` → `TIPOS_ACTIVO`.
-- [x] **Punto georreferencial como enlace**: al lado de la dirección, el
-      botón GPS completa un enlace de Google Maps; si no hay GPS se puede
-      pegar uno a mano. Obligatorio (`UBICACION_LINK_OBLIGATORIO`). Viaja
-      en el payload como `ubicacionLink` y va en el mensaje de WhatsApp.
+- [x] **Punto georreferencial como enlace**: bloque debajo de la dirección;
+      el botón "Obtener punto georreferencial" captura el GPS y genera un
+      enlace de Google Maps (tarjeta con coordenadas, "Ver en Google Maps"
+      y "Volver a capturar"). **Obligatorio y solo por GPS** (el usuario
+      pidió quitar el pegado manual el 2026-10-13). Viaja en el payload como
+      `ubicacionLink` y va en el mensaje de WhatsApp. Limitación: requiere
+      HTTPS (GitHub Pages lo es) y permiso de ubicación del navegador; quien
+      llene el formulario desde una oficina captura el punto de la oficina,
+      no del activo — por eso el texto pide "colóquese en el lugar del activo".
 - [x] **"¿Qué situación observa?" reemplazado por "Nivel de criticidad"**
       (Riesgo Inminente / Tipo A / Tipo B / Tipo C, según la tabla de
       distancia de ramas a la red MT que envió el usuario), con tarjetas con
