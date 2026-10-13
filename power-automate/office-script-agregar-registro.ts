@@ -54,7 +54,9 @@ function main(
     hoja = workbook.addWorksheet(NOMBRE_HOJA);
   }
 
-  let tabla = hoja.getTables().find((t) => t.getName() === NOMBRE_TABLA);
+  // getTable(nombre) en vez de getTables().find(...): al ejecutarse desde
+  // Power Automate, el .find con callback falla ("findAsync is not a function").
+  let tabla = hoja.getTable(NOMBRE_TABLA);
   if (!tabla) {
     const rangoEncabezados = hoja.getRangeByIndexes(0, 0, 1, ENCABEZADOS.length);
     rangoEncabezados.setValues([ENCABEZADOS]);

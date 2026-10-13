@@ -48,6 +48,22 @@
 
 ## Historial real de incidencias
 
+## 2026-10-13 — "Ejecutar script" falla: `findAsync is not a function`
+- Síntoma: la primera prueba real del flujo falló en la acción
+  "Ejecutar_script" con `Bad Request Runtime error: Line 57:
+  _a.sent(...).findAsync is not a function`.
+- Causa: el Office Script usaba `hoja.getTables().find((t) => t.getName() === ...)`.
+  Al correr desde Power Automate, el motor reescribe las llamadas con
+  callbacks sobre colecciones del libro y `.find` termina como `findAsync`,
+  que no existe.
+- Solución: `hoja.getTable(NOMBRE_TABLA)` (devuelve la tabla o undefined,
+  sin callbacks). **Hay que volver a pegar el script en Excel Online**
+  (Automatizar → AgregarRegistroPoda): el repo no se sincroniza solo con
+  el script guardado en el libro.
+- Lección: en Office Scripts evitar `find/filter/map` con callbacks que
+  llamen a métodos de la API del libro; usar los getters por nombre.
+
+
 ## 2026-09-17 — El formulario "enviaba" pero nada llegaba a Power Automate (error 400 invisible)
 - Síntoma: el usuario reportó que enviaba respuestas desde el formulario
   (WhatsApp se abría normal) pero nada aparecía vinculado al flujo de
