@@ -3,7 +3,7 @@
 > Léeme primero. Aquí se registra qué se hizo y qué falta, para no tener que
 > repasar toda la conversación en cada sesión nueva.
 
-## Estado actual: 🟡 Formulario actualizado con activo, criticidad y enlace GPS (2026-10-13) — faltan fotos reales, correo y esquema nuevo en Power Automate
+## Estado actual: 🟢 Flujo de punta a punta funcionando (probado 2026-10-13) — faltan fotos de criticidad y destinatarios finales del correo
 
 - **Importante**: se encontró y corrigió un bug que hacía que **ningún**
   envío del formulario llegara realmente a Power Automate (ver detalle en
@@ -214,6 +214,21 @@ Pedido recibido (4 puntos) y su resolución:
       `img/referencias/activo-*.png` y `config.js` → `TIPOS_ACTIVO` apunta a
       ellas (la vista previa limita la altura a 300 px porque son verticales).
       Las de criticidad siguen como placeholders SVG.
+
+## Hecho (2026-10-13, séptima ronda — flujo validado de punta a punta)
+
+- [x] Flujo de Power Automate armado por el usuario (disparador → variables →
+      crear carpeta → ciclo de fotos → Ejecutar script → condición/correo) y
+      **probado con peticiones reales** (`curl` con `sample`-style payload
+      marcado "PRUEBA"): Excel, carpeta con fotos y correo de Riesgo
+      Inminente funcionaron. Confirmado por el usuario.
+- [x] Bug corregido en el Office Script: `getTables().find(...)` fallaba con
+      `findAsync is not a function`; ahora usa `getTable(nombre)` (ver
+      ERRORS.md). El script guardado en Excel Online debe mantenerse igual
+      al de `power-automate/office-script-agregar-registro.ts`.
+- [x] Cuerpo HTML del correo en `power-automate/correo-riesgo-inminente.html`.
+- [ ] Borrar las filas/carpetas/fotos de las 2 pruebas ("PRUEBA Claude",
+      "PRUEBA Claude 2") del Excel y de SharePoint (las hizo Claude).
 
 ## Pendiente / próximos pasos
 
