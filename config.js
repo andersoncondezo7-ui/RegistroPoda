@@ -83,9 +83,9 @@ const CONFIG = {
   // al elegir la opción: para usar una foto real, súbela a la carpeta
   // img/referencias/ y cambia la ruta aquí (ej. "img/referencias/poste-mt.jpg").
   TIPOS_ACTIVO: [
-    { id: "poste_mt", texto: "Poste MT", imagen: "img/referencias/activo-poste-mt.svg" },
-    { id: "suministro", texto: "Suministro", imagen: "img/referencias/activo-suministro.svg" },
-    { id: "subestacion", texto: "Subestación", imagen: "img/referencias/activo-subestacion.svg" },
+    { id: "poste_mt", texto: "Poste MT", imagen: "img/referencias/activo-poste-mt.png" },
+    { id: "suministro", texto: "Suministro", imagen: "img/referencias/activo-suministro.png" },
+    { id: "subestacion", texto: "Subestación", imagen: "img/referencias/activo-subestacion.png" },
   ],
 
   // Nivel de criticidad según la distancia de las ramas a la red de media

@@ -209,14 +209,18 @@ Pedido recibido (4 puntos) y su resolución:
 - [x] Plantilla Excel regenerada con columnas `TipoActivo`, `UbicacionLink`,
       `Criticidad` (+ listas desplegables de activo y criticidad);
       Office Script y `sample-payload.json` actualizados.
-- [x] Fotos referenciales: **son placeholders SVG** en `img/referencias/`
-      (el usuario no entregó fotos reales todavía).
+- [x] Fotos referenciales de **activos reales** (2026-10-13): el usuario dejó
+      `Archivo/Poste.png`, `Subestacion.png` y `Suministro.png`; se copiaron a
+      `img/referencias/activo-*.png` y `config.js` → `TIPOS_ACTIVO` apunta a
+      ellas (la vista previa limita la altura a 300 px porque son verticales).
+      Las de criticidad siguen como placeholders SVG.
 
 ## Pendiente / próximos pasos
 
-- [ ] **El usuario debe entregar las fotos referenciales reales** (3 de
-      activos + 4 de criticidad) → copiarlas a `img/referencias/` y
-      cambiar las rutas `imagen` en `config.js`.
+- [ ] **Faltan las 4 fotos referenciales de criticidad** (Riesgo Inminente,
+      Tipo A, B y C): siguen siendo placeholders SVG en `img/referencias/`.
+      Copiarlas ahí y cambiar `imagen` en `config.js` → `NIVELES_CRITICIDAD`.
+      (Las 3 de activos ya son reales, ver abajo.)
 - [ ] **Definir destinatarios del correo de Riesgo Inminente** (no se
       indicaron) y armar el Paso 6 en Power Automate.
 - [ ] **Actualizar en Power Automate el esquema del disparador** con el de la

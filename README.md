@@ -20,7 +20,7 @@ texto listo). No requiere cuenta de WhatsApp Business API.
 | Archivo | Qué hace |
 |---|---|
 | `index.html` | Estructura del formulario (6 campos). |
-| `img/referencias/` | Fotos referenciales de tipos de activo y niveles de criticidad (hoy placeholders SVG). |
+| `img/referencias/` | Fotos referenciales de tipos de activo y niveles de criticidad (activos: fotos reales; criticidad: placeholders SVG). |
 | `style.css` | Estilos, tarjetas visuales con emoji para el tipo de problema. |
 | `config.js` | **Único archivo que normalmente hay que editar**: URL de Power Automate, nombre de la empresa, lista de distritos, límites de fotos. |
 | `script.js` | Lógica: validación, compresión de fotos, envío del reporte. |
@@ -55,9 +55,11 @@ texto listo). No requiere cuenta de WhatsApp Business API.
 5. **Foto(s)** — hasta 5, se comprimen automáticamente en el navegador antes de enviarse
 6. **Nombre y teléfono de contacto**
 
-> 🖼️ Las fotos referenciales de `img/referencias/` son **imágenes
-> provisionales (SVG)**. Para usar fotos reales: copia los `.jpg` a esa
-> carpeta y cambia la ruta en `config.js` (`imagen`).
+> 🖼️ Las fotos referenciales de **tipo de activo** ya son reales (las 3
+> originales están en `Archivo/`). Las de **criticidad** en
+> `img/referencias/` siguen siendo imágenes provisionales (SVG): para usar
+> fotos reales, copia los archivos a esa carpeta y cambia la ruta en
+> `config.js` (`imagen`).
 
 > ⚠️ La lista de 60 distritos en `config.js` viene de `Archivo/Distritos.xlsx`
 > (fuente entregada por el usuario, 2026-09-17). Dos casos a confirmar:
