@@ -19,7 +19,8 @@ texto listo). No requiere cuenta de WhatsApp Business API.
 
 | Archivo | Qué hace |
 |---|---|
-| `index.html` | Estructura del formulario (5 campos). |
+| `index.html` | Estructura del formulario (6 campos). |
+| `img/referencias/` | Fotos referenciales de tipos de activo y niveles de criticidad (hoy placeholders SVG). |
 | `style.css` | Estilos, tarjetas visuales con emoji para el tipo de problema. |
 | `config.js` | **Único archivo que normalmente hay que editar**: URL de Power Automate, nombre de la empresa, lista de distritos, límites de fotos. |
 | `script.js` | Lógica: validación, compresión de fotos, envío del reporte. |
@@ -31,17 +32,31 @@ texto listo). No requiere cuenta de WhatsApp Business API.
 | `PROGRESS.md` | Bitácora de avance del proyecto (léelo antes de pedir cambios nuevos). |
 | `ERRORS.md` | Registro de errores/incidencias encontrados y su solución. |
 
-## Los 5 campos del formulario
+## Los 6 campos del formulario
 
 1. **Distrito** — buscador dinámico: al escribir letras se filtran en vivo
    los distritos de la concesión de Luz del Sur (Lima Metropolitana +
    Huarochirí + Cañete); al seleccionar uno aparece una tarjeta de
    confirmación con opción "Cambiar" (lista completa editable en
    `config.js` → `DISTRITOS`)
-2. **Dirección o ubicación** (+ botón opcional para capturar coordenadas GPS)
-3. **¿Qué situación observa?** — selección visual con emoji (16 opciones + "Otro")
-4. **Foto(s)** — hasta 5, se comprimen automáticamente en el navegador antes de enviarse
-5. **Nombre y teléfono de contacto**
+2. **Tipo de activo** — desplegable (Poste MT, Suministro, Subestación) que
+   muestra la foto referencial del activo elegido (`config.js` →
+   `TIPOS_ACTIVO`)
+3. **Dirección o ubicación** + **enlace del punto georreferencial**: el
+   botón de GPS completa el enlace de Google Maps automáticamente; si no hay
+   GPS se puede pegar un enlace a mano. Es obligatorio
+   (`config.js` → `UBICACION_LINK_OBLIGATORIO`)
+4. **Nivel de criticidad** — Riesgo Inminente / Tipo A / Tipo B / Tipo C,
+   según la distancia de las ramas a la red de media tensión, con foto
+   referencial por nivel (`config.js` → `NIVELES_CRITICIDAD`). Reemplaza a
+   la antigua lista "¿Qué situación observa?". "Riesgo Inminente" dispara un
+   correo automático desde Power Automate.
+5. **Foto(s)** — hasta 5, se comprimen automáticamente en el navegador antes de enviarse
+6. **Nombre y teléfono de contacto**
+
+> 🖼️ Las fotos referenciales de `img/referencias/` son **imágenes
+> provisionales (SVG)**. Para usar fotos reales: copia los `.jpg` a esa
+> carpeta y cambia la ruta en `config.js` (`imagen`).
 
 > ⚠️ La lista de 60 distritos en `config.js` viene de `Archivo/Distritos.xlsx`
 > (fuente entregada por el usuario, 2026-09-17). Dos casos a confirmar:
@@ -150,9 +165,11 @@ agregar la fila:
 | Fecha | `@{triggerBody()?['fecha']}` |
 | Distrito | `@{triggerBody()?['distrito']}` |
 | Direccion | `@{triggerBody()?['direccion']}` |
+| TipoActivo | `@{triggerBody()?['tipoActivoTexto']}` |
+| UbicacionLink | `@{triggerBody()?['ubicacionLink']}` |
 | Latitud | `@{triggerBody()?['ubicacion']?['lat']}` |
 | Longitud | `@{triggerBody()?['ubicacion']?['lng']}` |
-| Situacion | `@{triggerBody()?['situacionTexto']}` |
+| Criticidad | `@{triggerBody()?['criticidadTexto']}` |
 | NombreContacto | `@{triggerBody()?['nombreContacto']}` |
 | Telefono | `@{triggerBody()?['telefonoContacto']}` |
 | EnlacesFotos | `@{join(variables('enlacesFotos'), '; ')}` |
@@ -174,7 +191,15 @@ agregar la fila:
    solo. Úsala si quieres más margen para agregar lógica más adelante
    (validaciones, evitar duplicados, etc.).
 
-### Paso 5 — Notificación por WhatsApp (no va en Power Automate)
+### Paso 5 — Correo automático por "Riesgo Inminente"
+
+Después de guardar la fila, una **Condición** revisa
+`triggerBody()?['criticidadId']` = `riesgo_inminente` y, si se cumple,
+envía un correo (Outlook) con distrito, activo, dirección, enlace del punto
+georreferencial y contacto. Pasos exactos en
+[`power-automate/GUIA_FLUJO_POWER_AUTOMATE.md`](power-automate/GUIA_FLUJO_POWER_AUTOMATE.md) → Paso 6.
+
+### Paso 6 — Notificación por WhatsApp (no va en Power Automate)
 
 Esta parte **no ocurre en el flujo**: la notificación por WhatsApp la arma
 y la dispara el propio `script.js`, en el navegador, justo después de que

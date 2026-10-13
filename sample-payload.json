@@ -1,10 +1,14 @@
 {
-  "fecha": "2026-09-17T15:30:00.000Z",
+  "fecha": "2026-10-13T15:30:00.000Z",
   "distrito": "Santiago de Surco",
+  "tipoActivoId": "poste_mt",
+  "tipoActivoTexto": "Poste MT",
   "direccion": "Av. Los Álamos 123, referencia frente al parque",
-  "ubicacion": { "lat": -12.046374, "lng": -77.042793 },
-  "situacionId": "ramas_tocando_cables",
-  "situacionTexto": "⚡ Ramas tocando los cables",
+  "ubicacion": { "lat": -12.135, "lng": -76.986 },
+  "ubicacionLink": "https://www.google.com/maps?q=-12.135000,-76.986000",
+  "criticidadId": "riesgo_inminente",
+  "criticidadTexto": "Riesgo Inminente",
+  "criticidadRegla": "Ramas < 10 cm de la red y/o por encima de la red",
   "nombreContacto": "Juan Pérez",
   "telefonoContacto": "987654321",
   "fotos": [

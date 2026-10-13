@@ -55,6 +55,8 @@ completo en `../ERRORS.md`.
   "properties": {
     "fecha": { "type": "string" },
     "distrito": { "type": "string" },
+    "tipoActivoId": { "type": "string" },
+    "tipoActivoTexto": { "type": "string" },
     "direccion": { "type": "string" },
     "ubicacion": {
       "type": ["object", "null"],
@@ -63,8 +65,10 @@ completo en `../ERRORS.md`.
         "lng": { "type": "number" }
       }
     },
-    "situacionId": { "type": "string" },
-    "situacionTexto": { "type": "string" },
+    "ubicacionLink": { "type": "string" },
+    "criticidadId": { "type": "string" },
+    "criticidadTexto": { "type": "string" },
+    "criticidadRegla": { "type": "string" },
     "nombreContacto": { "type": "string" },
     "telefonoContacto": { "type": "string" },
     "fotos": {
@@ -86,8 +90,16 @@ completo en `../ERRORS.md`.
 > con valores de ejemplo, por si Power Automate te pide "usar una carga
 > útil de ejemplo" en vez de un esquema directo.
 
+> ⚠️ **Actualización 2026-10-13:** el formulario cambió (se agregó tipo de
+> activo y enlace del punto georreferencial, y "situación observada" se
+> reemplazó por "nivel de criticidad"). Si tu disparador todavía tiene el
+> esquema anterior, **reemplázalo por este** — con el viejo el flujo sigue
+> recibiendo los datos, pero los campos nuevos no aparecen como contenido
+> dinámico (solo se pueden usar escribiendo `triggerBody()?['criticidadId']`
+> a mano). La URL del disparador no cambia al editar el esquema.
+
 Con este esquema ya configurado, Power Automate te va a mostrar
-`distrito`, `direccion`, `situacionTexto`, etc. como **contenido dinámico**
+`distrito`, `direccion`, `criticidadTexto`, etc. como **contenido dinámico**
 directo del disparador (sin ningún paso intermedio) en cualquier acción
 que agregues después.
 
@@ -158,10 +170,12 @@ Elige **una** de las dos opciones (no hace falta hacer las dos):
 |---|---|
 | Fecha | `@{triggerBody()?['fecha']}` |
 | Distrito | `@{triggerBody()?['distrito']}` |
+| TipoActivo | `@{triggerBody()?['tipoActivoTexto']}` |
 | Direccion | `@{triggerBody()?['direccion']}` |
+| UbicacionLink | `@{triggerBody()?['ubicacionLink']}` |
 | Latitud | `@{triggerBody()?['ubicacion']?['lat']}` |
 | Longitud | `@{triggerBody()?['ubicacion']?['lng']}` |
-| Situacion | `@{triggerBody()?['situacionTexto']}` |
+| Criticidad | `@{triggerBody()?['criticidadTexto']}` |
 | NombreContacto | `@{triggerBody()?['nombreContacto']}` |
 | Telefono | `@{triggerBody()?['telefonoContacto']}` |
 | EnlacesFotos | `@{join(variables('enlacesFotos'), '; ')}` |
@@ -185,10 +199,12 @@ Elige **una** de las dos opciones (no hace falta hacer las dos):
 |---|---|
 | fecha | `@{triggerBody()?['fecha']}` |
 | distrito | `@{triggerBody()?['distrito']}` |
+| tipoActivo | `@{triggerBody()?['tipoActivoTexto']}` |
 | direccion | `@{triggerBody()?['direccion']}` |
+| ubicacionLink | `@{triggerBody()?['ubicacionLink']}` |
 | latitud | `@{string(triggerBody()?['ubicacion']?['lat'])}` |
 | longitud | `@{string(triggerBody()?['ubicacion']?['lng'])}` |
-| situacion | `@{triggerBody()?['situacionTexto']}` |
+| criticidad | `@{triggerBody()?['criticidadTexto']}` |
 | nombreContacto | `@{triggerBody()?['nombreContacto']}` |
 | telefono | `@{triggerBody()?['telefonoContacto']}` |
 | enlacesFotos | `@{join(variables('enlacesFotos'), '; ')}` |
@@ -199,17 +215,55 @@ Elige **una** de las dos opciones (no hace falta hacer las dos):
 > no tiene GPS, ese valor llegará como `null`/vacío y el script lo guarda
 > tal cual, sin error.
 
-## Paso 6 — Notificación por WhatsApp: **no va acá**
+## Paso 6 — Correo automático cuando el caso es "Riesgo Inminente"
+
+Va **después** de guardar la fila del Excel (Paso 5), para que el caso
+quede registrado aunque el correo falle.
+
+1. Agrega la acción **"Condición"** (Control):
+   - Valor izquierdo (expresión): `triggerBody()?['criticidadId']`
+   - Operador: **es igual a**
+   - Valor derecho: `riesgo_inminente`
+2. En la rama **Sí**, agrega **"Office 365 Outlook" → "Enviar un correo
+   electrónico (V2)"**:
+   - **Para**: los correos que deben enterarse (separados por `;`) —
+     **definir con el usuario, por ahora no hay destinatarios fijados**.
+   - **Asunto**:
+     ```
+     🚨 RIESGO INMINENTE – Poda – @{triggerBody()?['distrito']} – @{triggerBody()?['tipoActivoTexto']}
+     ```
+   - **Cuerpo** (modo código `</>` o texto normal con contenido dinámico):
+     ```
+     Se registró un caso de RIESGO INMINENTE.
+
+     Distrito: @{triggerBody()?['distrito']}
+     Tipo de activo: @{triggerBody()?['tipoActivoTexto']}
+     Dirección: @{triggerBody()?['direccion']}
+     Punto georreferencial: @{triggerBody()?['ubicacionLink']}
+     Criticidad: @{triggerBody()?['criticidadTexto']} (@{triggerBody()?['criticidadRegla']})
+     Contacto: @{triggerBody()?['nombreContacto']} – @{triggerBody()?['telefonoContacto']}
+     Fecha: @{triggerBody()?['fecha']}
+     Fotos y carpeta del registro: @{outputs('Crear_nueva_carpeta')?['body/Path']}
+     ```
+   - **Importancia**: Alta.
+3. La rama **No** se deja vacía (los demás niveles solo se registran).
+
+> Si más adelante se quiere que otros niveles (por ejemplo Tipo A) también
+> avisen por correo, basta con cambiar la condición a "o" con más valores —
+> los `id` válidos son `riesgo_inminente`, `tipo_a`, `tipo_b`, `tipo_c`
+> (están en `config.js` → `NIVELES_CRITICIDAD`).
+
+## Paso 7 — Notificación por WhatsApp: **no va acá**
 
 El aviso por WhatsApp **no es parte de este flujo**. Lo dispara el propio
 navegador (`script.js`) justo después de recibir una respuesta exitosa de
 este disparador, con un enlace `https://wa.me/...` y un mensaje ya armado
-— ver README.md → sección 3, Paso 5, para el detalle. No hace falta
+— ver README.md → sección 3, Paso 6, para el detalle. No hace falta
 agregar ninguna acción de WhatsApp aquí. Si el flujo falla, el navegador
 ya no abre WhatsApp (se corrigió junto con lo del Content-Type — antes
 abría WhatsApp igual, aunque el guardado hubiera fallado).
 
-## Paso 7 — Guardar y probar
+## Paso 8 — Guardar y probar
 
 1. Guarda el flujo.
 2. Botón **"Probar"** (arriba a la derecha) → "Manualmente" → Guardar y
@@ -219,7 +273,11 @@ abría WhatsApp igual, aunque el guardado hubiera fallado).
 3. Ve a **"Historial de ejecuciones"** del flujo y confirma que cada paso
    quedó en verde. Si algo falla, el paso marcado en rojo te dice
    exactamente qué expresión o campo revisar.
-4. Verifica en SharePoint que:
+4. Para probar el correo: el `sample-payload.json` ya trae
+   `criticidadId: "riesgo_inminente"`, así que enviarlo con el `curl` de
+   más abajo debería disparar el correo (cambia a `"tipo_a"` para
+   confirmar que en ese caso **no** se envía).
+5. Verifica en SharePoint que:
    - Se creó la carpeta `Poda/{Distrito}/{año-mes}/{fecha-hora}_{Distrito}/`
      con las fotos adentro.
    - Se agregó la fila nueva en `TablaPoda` dentro de

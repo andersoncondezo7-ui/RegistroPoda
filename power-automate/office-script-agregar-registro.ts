@@ -9,13 +9,11 @@
  * 5. En Power Automate, usa la acción "Excel Online (Business) → Ejecutar
  *    script" (Run script), elige este libro y este script: Power Automate
  *    genera automáticamente un parámetro de entrada por cada argumento de
- *    la función `main` (fecha, distrito, direccion, etc.) — se rellenan con
- *    los campos que vienen del "Analizar JSON" del disparador.
+ *    la función `main` — se rellenan con los campos del disparador.
  *
  * Qué hace:
  * - Si la hoja "Registros" o la tabla "TablaPoda" no existen, las crea con
- *   los encabezados correctos (para no depender de que alguien las arme a
- *   mano primero).
+ *   los encabezados correctos.
  * - Agrega una fila nueva al final de la tabla con el registro recibido.
  * - Devuelve el número de fila insertada (útil para trazabilidad/logs).
  */
@@ -23,10 +21,12 @@ function main(
   workbook: ExcelScript.Workbook,
   fecha: string,
   distrito: string,
+  tipoActivo: string,
   direccion: string,
+  ubicacionLink: string,
   latitud: string,
   longitud: string,
-  situacion: string,
+  criticidad: string,
   nombreContacto: string,
   telefono: string,
   enlacesFotos: string,
@@ -37,10 +37,12 @@ function main(
   const ENCABEZADOS = [
     "Fecha",
     "Distrito",
+    "TipoActivo",
     "Direccion",
+    "UbicacionLink",
     "Latitud",
     "Longitud",
-    "Situacion",
+    "Criticidad",
     "NombreContacto",
     "Telefono",
     "EnlacesFotos",
@@ -63,10 +65,12 @@ function main(
   tabla.addRow(-1, [
     fecha,
     distrito,
+    tipoActivo,
     direccion,
+    ubicacionLink,
     latitud,
     longitud,
-    situacion,
+    criticidad,
     nombreContacto,
     telefono,
     enlacesFotos,

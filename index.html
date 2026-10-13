@@ -42,39 +42,51 @@
       </div>
     </section>
 
-    <!-- 2. Dirección o ubicación -->
+    <!-- 2. Tipo de activo -->
     <section class="campo">
-      <label for="direccion">2. Dirección o ubicación <span class="req">*</span></label>
-      <input type="text" id="direccion" name="direccion"
-             placeholder="Calle, número, referencia..." required>
-      <button type="button" id="btnUbicacion" class="btn-secundario">📍 Usar mi ubicación GPS (opcional)</button>
-      <p id="ubicacionEstado" class="ayuda" aria-live="polite"></p>
+      <label for="tipoActivo">2. Tipo de activo <span class="req">*</span></label>
+      <select id="tipoActivo" name="tipoActivo" required>
+        <option value="" disabled selected>Seleccione el tipo de activo...</option>
+      </select>
+      <div id="activoReferencia" class="referencia" hidden>
+        <img id="activoReferenciaImg" alt="Foto referencial del activo">
+        <p class="ayuda">Foto referencial: <strong id="activoReferenciaTexto"></strong></p>
+      </div>
     </section>
 
-    <!-- 3. Situación observada -->
+    <!-- 3. Dirección o ubicación -->
+    <section class="campo">
+      <label for="direccion">3. Dirección o ubicación <span class="req">*</span></label>
+      <input type="text" id="direccion" name="direccion"
+             placeholder="Calle, número, referencia..." required>
+      <button type="button" id="btnUbicacion" class="btn-secundario">📍 Obtener punto georreferencial (GPS)</button>
+      <p id="ubicacionEstado" class="ayuda" aria-live="polite"></p>
+      <label for="ubicacionLink" class="subetiqueta">Enlace del punto georreferencial <span class="req">*</span></label>
+      <input type="url" id="ubicacionLink" name="ubicacionLink" inputmode="url"
+             placeholder="Se completa con el GPS, o pegue un enlace de Google Maps">
+    </section>
+
+    <!-- 4. Nivel de criticidad -->
     <section class="campo">
       <fieldset>
-        <legend>3. ¿Qué situación observa? <span class="req">*</span></legend>
-        <div id="situacionGrid" class="situacion-grid" role="radiogroup" aria-required="true"></div>
-        <div id="otroDetalleWrap" class="campo campo--otro" hidden>
-          <label for="otroDetalle">Describa brevemente la situación</label>
-          <input type="text" id="otroDetalle" name="otroDetalle" placeholder="Detalle...">
-        </div>
+        <legend>4. Nivel de criticidad <span class="req">*</span></legend>
+        <p class="ayuda ayuda--arriba">Distancia de las ramas a la red de media tensión:</p>
+        <div id="criticidadGrid" class="criticidad-grid" role="radiogroup" aria-required="true"></div>
       </fieldset>
     </section>
 
-    <!-- 4. Foto(s) -->
+    <!-- 5. Foto(s) -->
     <section class="campo">
-      <label for="fotos">4. Foto(s) <span class="req">*</span></label>
+      <label for="fotos">5. Foto(s) <span class="req">*</span></label>
       <input type="file" id="fotos" name="fotos" accept="image/*" multiple>
       <p class="ayuda">Puede adjuntar hasta <span id="maxFotosTexto">5</span> fotos. Se comprimen automáticamente antes de enviarse.</p>
       <div id="previewFotos" class="preview-fotos"></div>
     </section>
 
-    <!-- 5. Nombre y teléfono de contacto -->
+    <!-- 6. Nombre y teléfono de contacto -->
     <section class="campo">
       <fieldset>
-        <legend>5. Nombre y teléfono de contacto <span class="req">*</span></legend>
+        <legend>6. Nombre y teléfono de contacto <span class="req">*</span></legend>
         <div class="fila-doble">
           <div>
             <label for="nombreContacto">Nombre</label>

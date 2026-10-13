@@ -79,6 +79,29 @@ const CONFIG = {
     "Zúñiga",
   ],
 
+  // Tipo de activo afectado. `imagen` es la foto referencial que se muestra
+  // al elegir la opción: para usar una foto real, súbela a la carpeta
+  // img/referencias/ y cambia la ruta aquí (ej. "img/referencias/poste-mt.jpg").
+  TIPOS_ACTIVO: [
+    { id: "poste_mt", texto: "Poste MT", imagen: "img/referencias/activo-poste-mt.svg" },
+    { id: "suministro", texto: "Suministro", imagen: "img/referencias/activo-suministro.svg" },
+    { id: "subestacion", texto: "Subestación", imagen: "img/referencias/activo-subestacion.svg" },
+  ],
+
+  // Nivel de criticidad según la distancia de las ramas a la red de media
+  // tensión. `id: "riesgo_inminente"` dispara el correo automático en el
+  // flujo de Power Automate (ver power-automate/GUIA_FLUJO_POWER_AUTOMATE.md).
+  NIVELES_CRITICIDAD: [
+    { id: "riesgo_inminente", texto: "Riesgo Inminente", regla: "Ramas < 10 cm de la red y/o por encima de la red", imagen: "img/referencias/criticidad-riesgo-inminente.svg" },
+    { id: "tipo_a", texto: "Tipo A", regla: "10 cm < Ramas < 50 cm", imagen: "img/referencias/criticidad-tipo-a.svg" },
+    { id: "tipo_b", texto: "Tipo B", regla: "50 cm < Ramas < 2 m", imagen: "img/referencias/criticidad-tipo-b.svg" },
+    { id: "tipo_c", texto: "Tipo C", regla: "2 m < Ramas", imagen: "img/referencias/criticidad-tipo-c.svg" },
+  ],
+
+  // Si es true, el reporte no se envía sin un punto georreferenciado
+  // (capturado con GPS o pegado como enlace de Google Maps).
+  UBICACION_LINK_OBLIGATORIO: true,
+
   // Límites para las fotos adjuntas. Las fotos se comprimen automáticamente
   // en el navegador antes de enviarse, para no saturar el flujo de Power
   // Automate ni la conexión de datos móvil de quien reporta.

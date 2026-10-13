@@ -3,7 +3,7 @@
 > Léeme primero. Aquí se registra qué se hizo y qué falta, para no tener que
 > repasar toda la conversación en cada sesión nueva.
 
-## Estado actual: 🟡 Bug crítico de envío corregido — falta terminar de armar el flujo y volver a probar
+## Estado actual: 🟡 Formulario actualizado con activo, criticidad y enlace GPS (2026-10-13) — faltan fotos reales, correo y esquema nuevo en Power Automate
 
 - **Importante**: se encontró y corrigió un bug que hacía que **ningún**
   envío del formulario llegara realmente a Power Automate (ver detalle en
@@ -179,7 +179,47 @@
       formulario publicado y confirme en el Historial de ejecuciones de
       Power Automate que ahora sí aparece la ejecución.
 
+## Hecho (2026-10-13, sexta ronda — indicaciones de Luz del Sur)
+
+Pedido recibido (4 puntos) y su resolución:
+
+- [x] **Tipo de activo** (desplegable: Poste MT, Suministro, Subestación)
+      con foto referencial que aparece al elegir. Definido en
+      `config.js` → `TIPOS_ACTIVO`.
+- [x] **Punto georreferencial como enlace**: al lado de la dirección, el
+      botón GPS completa un enlace de Google Maps; si no hay GPS se puede
+      pegar uno a mano. Obligatorio (`UBICACION_LINK_OBLIGATORIO`). Viaja
+      en el payload como `ubicacionLink` y va en el mensaje de WhatsApp.
+- [x] **"¿Qué situación observa?" reemplazado por "Nivel de criticidad"**
+      (Riesgo Inminente / Tipo A / Tipo B / Tipo C, según la tabla de
+      distancia de ramas a la red MT que envió el usuario), con tarjetas con
+      foto referencial. Definido en `config.js` → `NIVELES_CRITICIDAD`.
+      El payload ahora trae `criticidadId/Texto/Regla` y `tipoActivoId/Texto`
+      (se eliminaron `situacionId`/`situacionTexto`).
+- [x] **Correo automático por Riesgo Inminente**: documentado el Paso 6 de
+      `power-automate/GUIA_FLUJO_POWER_AUTOMATE.md` (Condición sobre
+      `criticidadId = riesgo_inminente` + "Enviar un correo (V2)" con
+      asunto/cuerpo listos). **No se puede crear desde aquí** (se arma en el
+      portal de Power Automate).
+- [x] Plantilla Excel regenerada con columnas `TipoActivo`, `UbicacionLink`,
+      `Criticidad` (+ listas desplegables de activo y criticidad);
+      Office Script y `sample-payload.json` actualizados.
+- [x] Fotos referenciales: **son placeholders SVG** en `img/referencias/`
+      (el usuario no entregó fotos reales todavía).
+
 ## Pendiente / próximos pasos
+
+- [ ] **El usuario debe entregar las fotos referenciales reales** (3 de
+      activos + 4 de criticidad) → copiarlas a `img/referencias/` y
+      cambiar las rutas `imagen` en `config.js`.
+- [ ] **Definir destinatarios del correo de Riesgo Inminente** (no se
+      indicaron) y armar el Paso 6 en Power Automate.
+- [ ] **Actualizar en Power Automate el esquema del disparador** con el de la
+      guía (campos nuevos) y reemplazar la fila de Excel / la plantilla
+      subida a SharePoint por la nueva (columnas distintas). Si la tabla
+      `TablaPoda` ya existe en SharePoint con las columnas viejas, hay que
+      agregarle `TipoActivo`, `UbicacionLink`, `Criticidad` y quitar
+      `Situacion`.
 
 - [ ] **Terminar de armar el flujo en Power Automate** siguiendo
       `power-automate/GUIA_FLUJO_POWER_AUTOMATE.md` (Pasos 2 a 5: crear

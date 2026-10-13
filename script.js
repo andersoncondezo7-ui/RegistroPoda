@@ -3,32 +3,14 @@
 // Depende de config.js (debe cargarse antes de este archivo).
 // ==========================================================================
 
-const TIPOS_PROBLEMA = [
-  { id: "arbol_cerca_cables", emoji: "🌳", texto: "Árbol cerca de los cables" },
-  { id: "ramas_cerca_cables", emoji: "🌿", texto: "Ramas cerca de los cables" },
-  { id: "ramas_tocando_cables", emoji: "⚡", texto: "Ramas tocando los cables" },
-  { id: "palmera_cerca_cables", emoji: "🌴", texto: "Palmera cerca de los cables" },
-  { id: "hojas_palmera_tocando_cables", emoji: "🌴", texto: "Hojas de palmera tocando los cables" },
-  { id: "ramas_golpean_viento", emoji: "🌬️", texto: "Ramas que golpean los cables con el viento" },
-  { id: "arbol_inclinado", emoji: "🌳", texto: "Árbol inclinado hacia los cables" },
-  { id: "riesgo_caida_arbol", emoji: "⚠️", texto: "Riesgo de caída de árbol" },
-  { id: "riesgo_caida_ramas", emoji: "⚠️", texto: "Riesgo de caída de ramas" },
-  { id: "arbol_caido_cables", emoji: "🌳", texto: "Árbol caído sobre los cables" },
-  { id: "vegetacion_dificulta_acceso", emoji: "🚧", texto: "Vegetación que dificulta el acceso a postes o equipos eléctricos" },
-  { id: "humo_chispas", emoji: "🔥", texto: "Se observa humo, chispas o quemaduras" },
-  { id: "cerca_viviendas", emoji: "🏠", texto: "Árbol o ramas cerca de viviendas y cables" },
-  { id: "riesgo_peatones", emoji: "🚶", texto: "Árbol o ramas representan riesgo para peatones o vehículos" },
-  { id: "vegetacion_crecida_postes", emoji: "🌱", texto: "Vegetación crecida alrededor de postes eléctricos" },
-  { id: "otro", emoji: "📷", texto: "Otro" },
-];
-
 let fotosProcesadas = []; // [{ nombre, tipo, base64 }]
 let ubicacionGPS = null;  // { lat, lng }
 
 document.addEventListener("DOMContentLoaded", () => {
   aplicarConfiguracion();
-  renderTiposProblema();
   configurarDistrito();
+  configurarActivo();
+  renderCriticidad();
   configurarUbicacion();
   configurarFotos();
   configurarEnvio();
@@ -154,44 +136,88 @@ function configurarDistrito() {
   });
 }
 
-function renderTiposProblema() {
-  const grid = document.getElementById("situacionGrid");
-  TIPOS_PROBLEMA.forEach((tipo) => {
+function configurarActivo() {
+  const select = document.getElementById("tipoActivo");
+  const bloque = document.getElementById("activoReferencia");
+  const img = document.getElementById("activoReferenciaImg");
+  const texto = document.getElementById("activoReferenciaTexto");
+  const activos = CONFIG.TIPOS_ACTIVO || [];
+
+  activos.forEach((activo) => {
+    const opt = document.createElement("option");
+    opt.value = activo.id;
+    opt.textContent = activo.texto;
+    select.appendChild(opt);
+  });
+
+  select.addEventListener("change", () => {
+    const activo = activos.find((a) => a.id === select.value);
+    select.classList.remove("campo-invalido");
+    if (!activo) {
+      bloque.hidden = true;
+      return;
+    }
+    img.src = activo.imagen;
+    img.alt = `Foto referencial: ${activo.texto}`;
+    texto.textContent = activo.texto;
+    bloque.hidden = false;
+  });
+}
+
+function renderCriticidad() {
+  const grid = document.getElementById("criticidadGrid");
+  (CONFIG.NIVELES_CRITICIDAD || []).forEach((nivel) => {
     const card = document.createElement("label");
-    card.className = "situacion-card";
+    card.className = "criticidad-card" + (nivel.id === "riesgo_inminente" ? " criticidad-card--inminente" : "");
     card.innerHTML = `
-      <input type="radio" name="situacion" value="${tipo.id}" required>
-      <span class="situacion-card__emoji">${tipo.emoji}</span>
-      <span class="situacion-card__texto">${tipo.texto}</span>
+      <input type="radio" name="criticidad" value="${nivel.id}">
+      <img src="${nivel.imagen}" alt="Foto referencial: ${nivel.texto}" loading="lazy">
+      <span class="criticidad-card__cuerpo">
+        <span class="criticidad-card__titulo">${nivel.texto}</span>
+        <span class="criticidad-card__regla">${nivel.regla}</span>
+      </span>
     `;
     grid.appendChild(card);
   });
 
   grid.addEventListener("change", (e) => {
-    if (e.target.name !== "situacion") return;
-    document.querySelectorAll(".situacion-card").forEach((c) => c.classList.remove("is-selected"));
-    e.target.closest(".situacion-card").classList.add("is-selected");
-    document.getElementById("otroDetalleWrap").hidden = e.target.value !== "otro";
+    if (e.target.name !== "criticidad") return;
+    grid.querySelectorAll(".criticidad-card").forEach((c) => c.classList.remove("is-selected"));
+    e.target.closest(".criticidad-card").classList.add("is-selected");
   });
+}
+
+function enlaceMapas(lat, lng) {
+  return `https://www.google.com/maps?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
 }
 
 function configurarUbicacion() {
   const btn = document.getElementById("btnUbicacion");
   const estado = document.getElementById("ubicacionEstado");
+  const inputLink = document.getElementById("ubicacionLink");
+
+  // Si la persona edita o pega el enlace a mano, las coordenadas del GPS ya
+  // no corresponden a ese enlace.
+  inputLink.addEventListener("input", () => {
+    ubicacionGPS = null;
+    inputLink.classList.remove("campo-invalido");
+  });
 
   btn.addEventListener("click", () => {
     if (!navigator.geolocation) {
-      estado.textContent = "Este dispositivo no permite obtener la ubicación automáticamente.";
+      estado.textContent = "Este dispositivo no permite obtener la ubicación automáticamente. Pegue un enlace de Google Maps.";
       return;
     }
     estado.textContent = "Obteniendo ubicación...";
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         ubicacionGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        estado.textContent = `✅ Ubicación capturada (${ubicacionGPS.lat.toFixed(5)}, ${ubicacionGPS.lng.toFixed(5)})`;
+        inputLink.value = enlaceMapas(ubicacionGPS.lat, ubicacionGPS.lng);
+        inputLink.classList.remove("campo-invalido");
+        estado.textContent = `✅ Punto capturado (${ubicacionGPS.lat.toFixed(5)}, ${ubicacionGPS.lng.toFixed(5)})`;
       },
       () => {
-        estado.textContent = "No se pudo obtener la ubicación. Puede continuar solo con la dirección.";
+        estado.textContent = "No se pudo obtener la ubicación. Pegue un enlace de Google Maps del punto.";
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -282,16 +308,18 @@ function validarFormulario() {
   };
 
   marcar("buscadorDistrito", document.getElementById("distrito").value.trim() !== "");
+  marcar("tipoActivo", document.getElementById("tipoActivo").value !== "");
   marcar("direccion", document.getElementById("direccion").value.trim() !== "");
   marcar("nombreContacto", document.getElementById("nombreContacto").value.trim() !== "");
   marcar("telefonoContacto", document.getElementById("telefonoContacto").value.trim() !== "");
 
-  const situacionSeleccionada = document.querySelector('input[name="situacion"]:checked');
-  if (!situacionSeleccionada) valido = false;
-
-  if (situacionSeleccionada?.value === "otro") {
-    marcar("otroDetalle", document.getElementById("otroDetalle").value.trim() !== "");
+  const link = document.getElementById("ubicacionLink").value.trim();
+  const linkValido = /^https?:\/\/\S+$/i.test(link);
+  if (CONFIG.UBICACION_LINK_OBLIGATORIO || link !== "") {
+    marcar("ubicacionLink", linkValido);
   }
+
+  if (!document.querySelector('input[name="criticidad"]:checked')) valido = false;
 
   const minFotos = CONFIG.FOTOS?.minCantidadRequerida ?? 1;
   if (fotosProcesadas.length < minFotos) {
@@ -307,18 +335,21 @@ function validarFormulario() {
 }
 
 function construirPayload() {
-  const situacionInput = document.querySelector('input[name="situacion"]:checked');
-  const tipo = TIPOS_PROBLEMA.find((t) => t.id === situacionInput.value);
+  const criticidadId = document.querySelector('input[name="criticidad"]:checked').value;
+  const nivel = CONFIG.NIVELES_CRITICIDAD.find((n) => n.id === criticidadId);
+  const activo = CONFIG.TIPOS_ACTIVO.find((a) => a.id === document.getElementById("tipoActivo").value);
 
   return {
     fecha: new Date().toISOString(),
     distrito: document.getElementById("distrito").value.trim(),
+    tipoActivoId: activo.id,
+    tipoActivoTexto: activo.texto,
     direccion: document.getElementById("direccion").value.trim(),
     ubicacion: ubicacionGPS,
-    situacionId: tipo.id,
-    situacionTexto: tipo.id === "otro"
-      ? document.getElementById("otroDetalle").value.trim()
-      : `${tipo.emoji} ${tipo.texto}`,
+    ubicacionLink: document.getElementById("ubicacionLink").value.trim(),
+    criticidadId: nivel.id,
+    criticidadTexto: nivel.texto,
+    criticidadRegla: nivel.regla,
     nombreContacto: document.getElementById("nombreContacto").value.trim(),
     telefonoContacto: document.getElementById("telefonoContacto").value.trim(),
     fotos: fotosProcesadas.map((f) => ({
@@ -374,9 +405,9 @@ async function enviarReporte(payload) {
 function limpiarFormulario() {
   document.getElementById("formPoda").reset();
   document.getElementById("previewFotos").innerHTML = "";
-  document.getElementById("otroDetalleWrap").hidden = true;
+  document.getElementById("activoReferencia").hidden = true;
   document.getElementById("ubicacionEstado").textContent = "";
-  document.querySelectorAll(".situacion-card").forEach((c) => c.classList.remove("is-selected"));
+  document.querySelectorAll(".criticidad-card").forEach((c) => c.classList.remove("is-selected"));
   document.getElementById("distritoSeleccionado").hidden = true;
   document.getElementById("comboboxDistrito").hidden = false;
   document.getElementById("buscadorDistrito").value = "";
@@ -408,16 +439,17 @@ function construirMensajeWhatsApp(payload) {
     "🌳⚡ *NUEVO REGISTRO DE PODA*",
     "",
     `📍 *Distrito:* ${payload.distrito}`,
+    `🔌 *Tipo de activo:* ${payload.tipoActivoTexto}`,
     `🏠 *Dirección:* ${payload.direccion}`,
-    `⚠️ *Situación:* ${payload.situacionTexto}`,
+    `⚠️ *Criticidad:* ${payload.criticidadTexto} (${payload.criticidadRegla})`,
     `👤 *Contacto:* ${payload.nombreContacto}`,
     `📱 *Teléfono:* ${payload.telefonoContacto}`,
     `🗓️ *Fecha:* ${fechaLegible}`,
     `📷 *Fotos adjuntadas:* ${payload.fotos.length}`,
   ];
 
-  if (payload.ubicacion) {
-    lineas.push(`🛰️ *Ubicación GPS:* https://maps.google.com/?q=${payload.ubicacion.lat},${payload.ubicacion.lng}`);
+  if (payload.ubicacionLink) {
+    lineas.push(`🛰️ *Punto georreferencial:* ${payload.ubicacionLink}`);
   }
 
   lineas.push("", "_Enviado desde el formulario de Reporte de Poda_");
