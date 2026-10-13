@@ -1,0 +1,51 @@
+<div style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e3b5b1;border-radius:8px;overflow:hidden;">
+
+  <div style="background:#b3261e;color:#ffffff;padding:16px 20px;">
+    <div style="font-size:13px;letter-spacing:1px;text-transform:uppercase;">Luz del Sur · Reporte de poda</div>
+    <div style="font-size:22px;font-weight:bold;margin-top:4px;">🚨 Caso de RIESGO INMINENTE</div>
+  </div>
+
+  <div style="padding:18px 20px;color:#1f2a24;font-size:14px;line-height:1.5;">
+    <p style="margin:0 0 14px;">Se registró un caso de poda con <strong style="color:#b3261e;">riesgo inminente</strong> que requiere atención prioritaria.</p>
+
+    <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:14px;">
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;width:38%;color:#5a655f;">Distrito</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>@{triggerBody()?['distrito']}</strong></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;color:#5a655f;">Tipo de activo</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;">@{triggerBody()?['tipoActivoTexto']}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;color:#5a655f;">Dirección</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;">@{triggerBody()?['direccion']}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;color:#5a655f;">Criticidad</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong style="color:#b3261e;">@{triggerBody()?['criticidadTexto']}</strong><br><span style="color:#5a655f;font-size:13px;">@{triggerBody()?['criticidadRegla']}</span></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;color:#5a655f;">Contacto</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;">@{triggerBody()?['nombreContacto']} · @{triggerBody()?['telefonoContacto']}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;color:#5a655f;">Fecha de registro</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;">@{convertTimeZone(triggerBody()?['fecha'],'UTC','SA Pacific Standard Time','dd/MM/yyyy HH:mm')}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;color:#5a655f;">Carpeta con fotos</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #eee;font-size:13px;">@{outputs('Crear_nueva_carpeta')?['body/Path']}</td>
+      </tr>
+    </table>
+
+    <p style="margin:20px 0 6px;">
+      <a href="@{triggerBody()?['ubicacionLink']}" style="display:inline-block;background:#1e7d3c;color:#ffffff;text-decoration:none;font-weight:bold;padding:11px 18px;border-radius:6px;">📍 Ver punto en Google Maps</a>
+    </p>
+  </div>
+
+  <div style="background:#f4f6f5;color:#5a655f;font-size:12px;padding:12px 20px;">
+    Correo automático generado por el formulario de reporte de poda. No responder a este mensaje.
+  </div>
+
+</div>

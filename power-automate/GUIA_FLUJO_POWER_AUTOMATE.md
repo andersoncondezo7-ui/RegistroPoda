@@ -232,19 +232,11 @@ quede registrado aunque el correo falle.
      ```
      🚨 RIESGO INMINENTE – Poda – @{triggerBody()?['distrito']} – @{triggerBody()?['tipoActivoTexto']}
      ```
-   - **Cuerpo** (modo código `</>` o texto normal con contenido dinámico):
-     ```
-     Se registró un caso de RIESGO INMINENTE.
-
-     Distrito: @{triggerBody()?['distrito']}
-     Tipo de activo: @{triggerBody()?['tipoActivoTexto']}
-     Dirección: @{triggerBody()?['direccion']}
-     Punto georreferencial: @{triggerBody()?['ubicacionLink']}
-     Criticidad: @{triggerBody()?['criticidadTexto']} (@{triggerBody()?['criticidadRegla']})
-     Contacto: @{triggerBody()?['nombreContacto']} – @{triggerBody()?['telefonoContacto']}
-     Fecha: @{triggerBody()?['fecha']}
-     Fotos y carpeta del registro: @{outputs('Crear_nueva_carpeta')?['body/Path']}
-     ```
+   - **Cuerpo**: activa el modo código `</>` del editor y pega todo el
+     contenido de [`correo-riesgo-inminente.html`](correo-riesgo-inminente.html)
+     (ya trae las expresiones `triggerBody()?[...]` y el botón "Ver punto
+     en Google Maps"). Si lo pegas en el editor normal, las expresiones
+     quedan como texto y no se reemplazan.
    - **Importancia**: Alta.
 3. La rama **No** se deja vacía (los demás niveles solo se registran).
 

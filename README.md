@@ -27,6 +27,7 @@ texto listo). No requiere cuenta de WhatsApp Business API.
 | `sample-payload.json` | Ejemplo del JSON que se envía, útil para generar el esquema en Power Automate. |
 | `power-automate/GUIA_FLUJO_POWER_AUTOMATE.md` | **Guía paso a paso para armar el flujo**, con los valores exactos de cada acción para copiar y pegar. |
 | `power-automate/RegistroPoda_Plantilla.xlsx` | Plantilla del Excel a subir a SharePoint (hoja "Registros", tabla `TablaPoda`, con validación de distritos). |
+| `power-automate/correo-riesgo-inminente.html` | Cuerpo HTML del correo automático de Riesgo Inminente (se pega en modo código en la acción de Outlook). |
 | `power-automate/office-script-agregar-registro.ts` | Office Script que agrega cada registro a la tabla del Excel (alternativa a la acción nativa "Agregar una fila"). |
 | `Archivo/Distritos.xlsx` | Fuente oficial de los 60 distritos (entregada por el usuario). Si cambia, actualizar `config.js` → `DISTRITOS` y la hoja "Listas" de `RegistroPoda_Plantilla.xlsx`. |
 | `PROGRESS.md` | Bitácora de avance del proyecto (léelo antes de pedir cambios nuevos). |
